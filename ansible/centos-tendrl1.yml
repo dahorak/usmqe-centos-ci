@@ -1,0 +1,12 @@
+# Request 3 CentOS 7 x86_64 nodes
+- cico:
+    action: get
+    api_key: {{ api_key }}
+    arch: x86_64
+    release: 7
+    count: 3
+    register: output.data
+
+- localaction:
+    copy content: {{ output.data }}
+    dest: data.hosts

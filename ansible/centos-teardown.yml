@@ -1,0 +1,5 @@
+# Release nodes requested in a registered 'get' action
+- cico:
+    action: done
+    api_key: {{ api_key }}
+    ssid: {{ [clustername].data.results.ssid }}

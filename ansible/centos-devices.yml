@@ -3,5 +3,5 @@
   hosts: gluster
   roles: 
     - role: createdevices
-      order: "{{ item }}"
+      order: item
       with_sequence: count=devices_count

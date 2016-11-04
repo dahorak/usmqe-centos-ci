@@ -1,2 +1,3 @@
 ---
-api_key: "{{ lookup('file', '/home/tendrl/duffy.key') }}"
+home_dir: "/home/tendrl/"
+api_key: "{{ lookup('file', home_dir + 'duffy.key') }}"

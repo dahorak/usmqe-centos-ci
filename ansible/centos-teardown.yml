@@ -1,5 +1,13 @@
 # Release nodes requested in a registered 'get' action
-- cico:
-    action: done
-    api_key: {{ api_key }}
-    ssid: {{ [clustername].data.results.ssid }}
+---
+- hosts: localhost
+  connection: local 
+  vars:
+    - ssid: "{{ lookup('csvfile', '{} file={} delimiter=,'.format(clustername, home_dir + clustername + '.ssid')) }}"
+  tasks: 
+    - debug: msg="{{ ssid }}"
+
+    - cico:
+        action=done
+        api_key="{{ api_key }}"
+        ssid="{{ ssid }}"

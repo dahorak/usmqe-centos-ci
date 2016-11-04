@@ -1,0 +1,9 @@
+---
+- debug: msg="Host {{ item.key }} is {{ item.value.architecture }}"
+  with_dict: "{{ tendrlhosts }}"
+
+- name: Create file with ssids in tendrl home directory
+  template:
+    src=ansible-ssid.j2
+    dest="{{ home_dir + clustername }}.ssid"
+

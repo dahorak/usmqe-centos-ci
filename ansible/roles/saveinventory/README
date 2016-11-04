@@ -1,0 +1,3 @@
+This role saves inventory file to /home/tendrl for cluster with clustername.
+It should be used with empty inventory file:
+$ ansible-playbook -i empty.hosts

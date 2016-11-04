@@ -22,6 +22,14 @@
             name: CLUSTER_CONFIGURATION
             choices: "{obj:cluster_configuration_choices}"
             description: "Cluster configuration (definition)."
+    scm:
+        - git:
+            url: 'https://github.com/mkudlej/usmqe-centos-ci.git'
+            branches:
+                - "*/master"
+            basedir: usmqe-centos-ci
+            skip-tag: true
+            wipe-workspace: true
 
     disabled: "{obj:disabled}"
     triggers:
@@ -44,23 +52,23 @@
             type: absolute
     node: '{node}'
     builders:
-     #   - shell: !include-raw: ../scripts/get-node.sh
-     #   - shell: centos-ci/scripts/bootstrap.sh libgfapi-python.sh
         - shell: |
             #!/bin/bash -xe
-            # load OS credentials to env
-     #       source ~/.nova-jenkins-openrc.sh
-     #       # create cluster
-     #       python usm-cluster/mycluster.py -t {node} -c usm-cluster-definition/{clustername}_${{CLUSTER_CONFIGURATION}}.ini -i {clustername}.hosts -u usersys_{clustername}.hosts
-     #       {cluster_create_extra_command}
-     #   - shell: |
-     #       #!/bin/bash -xe
-     #       /bin/cp ${{WORKSPACE}}/{clustername}.hosts ${{HOME}}/{clustername}.hosts
-     #       #sleep 120
-     #   - shell: |
-     #       #!/bin/bash -xe
-     #       cat ${{HOME}}/{clustername}.hosts
-
+            # Get machines from CentOS CI pool
+            env
+            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/{clustername}.yml
+        - shell: |
+            #!/bin/bash -x
+            # Print Ansible host file
+            cat ${{HOME}}/{clustername}.hosts
+        - shell: |
+            #!/bin/bash -x
+            # Prepare 2 disks in all Gluster machines
+            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv -e devices_count=2 ${{ANSIBLE_DIR}}/centos_devices.yml
+ 
     publishers:
         - conditional-publisher:
           - condition-kind: shell
@@ -75,7 +83,7 @@
         # return machines in case of deployment failure
         - conditional-publisher:
           - condition-kind: current-status
-            condition-wort: FAILURE
+            condition-worst: FAILURE
             condition-best: UNSTABLE
             on-evaluation-failure: dont-run
             action:
@@ -111,21 +119,33 @@
             type: absolute
     node: '{node}'
     builders:
-        - shell: !include-raw: ../scripts/return-node.sh
-        #- shell: |
-        #    #!/bin/bash -xe
-        #    # load OS credentials to env
-        #    source ~/.nova-jenkins-openrc.sh
-        #    # create cluster
-        #    python usm-cluster/mycluster.py -t {node} -c usm-cluster-definition/{clustername}_${{CLUSTER_CONFIGURATION}}.ini -i {clustername}.hosts -u usersys_{clustername}.hosts
-        #    {cluster_create_extra_command}
-        #- shell: |
-        #    #!/bin/bash -xe
-        #    /bin/cp ${{WORKSPACE}}/{clustername}.hosts ${{HOME}}/{clustername}.hosts
-        #    #sleep 120
-        #- shell: |
-        #    #!/bin/bash -xe
-        #    cat ${{HOME}}/{clustername}.hosts
+        - shell: |
+            #!/bin/bash -xe
+            # Return machines to CentOS CI pool
+            env
+            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/centos-teardown.yml
+        - shell: |
+            #!/bin/bash -x
+            # Make sure that all machines return to pool
+            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/centos-inventory.yml
+            if [ "$?" == "0" ]; then 
+              echo "There are still machine for cluster {clustername} which should be returned to pool."
+              exit 1;
+            else
+              exit 0;
+            fi
+
+- job-group:
+    name: 'tendrl-jobs'
+    jobs:
+    - '1-{clustername}-cluster-create'
+    - 'X-{clustername}-teardown'
 
 - project:
     name: "tendrl-deploy"

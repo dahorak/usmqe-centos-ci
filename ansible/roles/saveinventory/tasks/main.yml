@@ -1,0 +1,23 @@
+---
+- name: Add hosts to tendrl_nodes group
+  add_host:
+    name="{{ item }}"
+    groups="tendrl_nodes"
+  with_items: "{{ tendrlhosts }}"
+
+- name: Add hosts to gluster group
+  add_host:
+    name="{{ item }}"
+    groups="gluster"
+  with_items: "{{ tendrlhosts }}"
+
+- name: Add one of hosts to server group
+  add_host:
+    name="{{ tendrlhosts | first }}"
+    groups="server"
+
+- name: Create inventory file in tendrl home directory
+  template:
+    src=ansible-hosts.j2
+    dest="{{ home_dir + clustername }}.hosts"
+

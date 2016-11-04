@@ -9,10 +9,10 @@
   shell: "mkfs -t xfs /srv/test.brick{{ order }}.img"
 
 - name: Create mount point
-  file: "path=/bricks/b{{order}}" state=directory
+  file: path=/bricks/b{{order}} state=directory
 
 - name: Mount image
   shell: "mount -o loop /srv/test.brick{{order}}.img /bricks/b{{order}}"
 
 - name: Create data dir
-  file: "path=/bricks/b{{order}}/data" state=directory
+  file: path=/bricks/b{{order}}/data state=directory

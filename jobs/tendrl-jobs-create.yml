@@ -67,7 +67,9 @@
         - shell: |
             #!/bin/bash -x
             # Prepare 2 disks in all Gluster machines
-            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv -e devices_count=2 ${{ANSIBLE_DIR}}/centos_devices.yml
+            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv -e devices_count=2 ${{ANSIBLE_DIR}}/centos-devices.yml
  
     publishers:
         - conditional-publisher:
@@ -110,6 +112,16 @@
           use-build-blocker: true
           blocking-jobs:
             - "X-.*-cluster-teardown"
+    
+    scm:
+        - git:
+            url: 'https://github.com/mkudlej/usmqe-centos-ci.git'
+            branches:
+                - "*/master"
+            basedir: usmqe-centos-ci
+            skip-tag: true
+            wipe-workspace: true
+
     wrappers:
         - ansicolor:
             colormap: "xterm"
@@ -145,7 +157,7 @@
     name: 'tendrl-jobs'
     jobs:
     - '1-{clustername}-cluster-create'
-    - 'X-{clustername}-teardown'
+    - 'X-{clustername}-cluster-teardown'
 
 - project:
     name: "tendrl-deploy"

@@ -3,17 +3,17 @@
   add_host:
     name="{{ item }}"
     groups="tendrl_nodes"
-  with_items: "{{ tendrlhosts }}"
+  with_items: "{{ tendrlhosts[1:] }}"
 
 - name: Add hosts to gluster group
   add_host:
     name="{{ item }}"
     groups="gluster"
-  with_items: "{{ tendrlhosts }}"
+  with_items: "{{ tendrlhosts[1:] }}"
 
 - name: Add one of hosts to server group
   add_host:
-    name="{{ tendrlhosts | first }}"
+    name="{{ tendrlhosts[0] }}"
     groups="server"
 
 - name: Create inventory file in tendrl home directory

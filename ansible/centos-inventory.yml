@@ -6,6 +6,7 @@
   pre_tasks: 
     - cico:
         action=list
+        api_key={{ api_key }}
         ssid="{{ ssid }}"
       register: data
 

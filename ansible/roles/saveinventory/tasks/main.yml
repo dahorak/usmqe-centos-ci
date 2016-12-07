@@ -2,7 +2,7 @@
 - name: Add hosts to tendrl_nodes group
   add_host:
     name="{{ item }}"
-    groups="tendrl_nodes"
+    groups="usm_nodes"
   with_items: "{{ tendrlhosts[1:] }}"
 
 - name: Add hosts to gluster group
@@ -11,10 +11,10 @@
     groups="gluster"
   with_items: "{{ tendrlhosts[1:] }}"
 
-- name: Add one of hosts to server group
+- name: Add one of hosts to usm_server group
   add_host:
     name="{{ tendrlhosts[0] }}"
-    groups="server"
+    groups="usm_server"
 
 - name: Create inventory file in tendrl home directory
   template:

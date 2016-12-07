@@ -16,6 +16,11 @@
     name="{{ tendrlhosts[0] }}"
     groups="usm_server"
 
+- name: Add one of hosts to qe_server group
+  add_host:
+    name="{{ tendrlhosts[0] }}"
+    groups="qe_server"
+
 - name: Create inventory file in tendrl home directory
   template:
     src=ansible-hosts.j2

@@ -3,16 +3,21 @@
   file: path=/srv/ state=directory
 
 - name: Create image
-  shell: "truncate --size=2G /srv/test.brick{{ order }}.img"
+  shell: "truncate --size=2G /srv/test.brick{{ item }}.img"
+  with_sequence: count={{ devices_count }}
 
 - name: Create xfs on image
-  shell: "mkfs -t xfs /srv/test.brick{{ order }}.img"
+  shell: "mkfs -t xfs /srv/test.brick{{ item }}.img"
+  with_sequence: count={{ devices_count }}
 
 - name: Create mount point
-  file: path=/bricks/b{{order}} state=directory
+  file: path=/bricks/b{{ item }} state=directory
+  with_sequence: count={{ devices_count }}
 
 - name: Mount image
-  shell: "mount -o loop /srv/test.brick{{order}}.img /bricks/b{{order}}"
+  shell: "mount -o loop /srv/test.brick{{ item }}.img /bricks/b{{ item }}"
+  with_sequence: count={{ devices_count }}
 
 - name: Create data dir
-  file: path=/bricks/b{{order}}/data state=directory
+  file: path=/bricks/b{{ item }}/data state=directory
+  with_sequence: count={{ devices_count }}

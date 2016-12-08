@@ -2,6 +2,5 @@
 - name: Prepare disk devices for creating Gluster bricks
   hosts: gluster
   roles: 
-    - role: createdevices
-      order: "{{ item }}"
-      with_sequence: count=devices_count
+  - { role: createdevices, devices_count: devices_count }
+

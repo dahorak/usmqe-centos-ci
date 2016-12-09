@@ -1,6 +1,6 @@
 - job-template:
-    name: "tendrl-1-{clustername}-cluster-create"
-    display-name: '1 - {clustername} Cluster create'
+    name: "1-{clustername}-cluster-create"
+    display-name: 'Tendrl - 1 - {clustername} Cluster create'
     description: 'Do not edit this job through the web! Deploy machines for testing.'
     project-type: freestyle
     defaults: global
@@ -71,21 +71,21 @@
  
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-2-{clustername}-cluster-install'
+        - project: '2-{clustername}-cluster-install'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'tendrl-X-{clustername}-cluster-teardown'
+        - project: 'X-{clustername}-cluster-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "tendrl-2-{clustername}-cluster-install"
-    display-name: '2 - {clustername} Cluster install'
+    name: "2-{clustername}-cluster-install"
+    display-name: 'Tendrl - 2 - {clustername} Cluster install'
     description: 'Do not edit this job through the web!'
     scm:
         - git:
@@ -154,21 +154,21 @@
 
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-3-{clustername}-cluster-test'
+        - project: '3-{clustername}-cluster-test'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'tendrl-X-{clustername}-cluster-teardown'
+        - project: 'X-{clustername}-cluster-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "tendrl-3-{clustername}-cluster-test"
-    display-name: '3 - {clustername} Cluster test'
+    name: "3-{clustername}-cluster-test"
+    display-name: 'Tendrl - 3 - {clustername} Cluster test'
     description: 'Do not edit this job through the web!'
     scm:
         - git:
@@ -238,7 +238,7 @@
             #cat ${{HOME}}/{clustername}.hosts
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-X-{clustername}-cluster-teardown'
+        - project: 'X-{clustername}-cluster-teardown'
           current-parameters: true
           node-parameters: true
           condition: ALWAYS
@@ -261,8 +261,8 @@
 
 
 - job-template:
-    name: "tendrl-X-{clustername}-cluster-teardown"
-    display-name: 'X - {clustername} Cluster teardown'
+    name: "X-{clustername}-cluster-teardown"
+    display-name: 'Tendrl - X - {clustername} Cluster teardown'
     description: 'Do not edit this job through the web! Return machines back to pool.'
     project-type: freestyle
     defaults: global
@@ -322,10 +322,10 @@
 - job-group:
     name: 'tendrl-jobs'
     jobs:
-    - 'tendrl-1-{clustername}-cluster-create'
-    - 'tendrl-2-{clustername}-cluster-install'
-    - 'tendrl-3-{clustername}-cluster-test'
-    - 'tendrl-X-{clustername}-cluster-teardown'
+    - '1-{clustername}-cluster-create'
+    - '2-{clustername}-cluster-install'
+    - '3-{clustername}-cluster-test'
+    - 'X-{clustername}-cluster-teardown'
 
 - project:
     name: "tendrl-deploy"

@@ -333,7 +333,7 @@
       - 'tendrl-jobs'
     clustername:
       - centos-tendrl1:
-          timed: ''
+          timed: 'H 22 * * *'
           timeout: 60
           disabled: false
           node: 'tendrl-ci-slave01'

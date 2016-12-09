@@ -237,41 +237,11 @@
             #!/bin/bash -x
             #cat ${{HOME}}/{clustername}.hosts
     publishers:
-      #- plot:
-      #    - title: 'TestResults'
-      #      yaxis: ''
-      #      csv-file-name: 'testresults.csv'
-      #      group: 'TestResults'
-      #      style: 'line'
-      #      use-description: false
-      #      series:
-      #        - file: 'raut-core/logs/testresult.csv'
-      #          format: 'csv'
-      #          inclusion-flag: 'off'
       - trigger-parameterized-builds:
         - project: 'tendrl-X-{clustername}-cluster-teardown'
           current-parameters: true
           node-parameters: true
           condition: ALWAYS
-
-      - ircbot:
-          strategy: all
-          notify-start: false
-          notify-committers: false
-          notify-culprits: false
-          notify-upstream: false
-          notify-fixers: false
-          message-type: summary
-      #- junit:
-      #-   results: usmqe-tests/result.xml
-      #-   #keep-long-stdio: false
-      #-   #health-scale-factor: 1.0
-      #-   #allow-empty-results: true
-      #-   test-stability: true
-      #-   #claim-build: true
-      #-   measurement-plots: true
-      #-   #flaky-test-reports: true
-
       - xunit:
           thresholdmode: 'number'
           thresholds:

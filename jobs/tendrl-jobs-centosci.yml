@@ -1,5 +1,5 @@
 - job-template:
-    name: "1-{clustername}-cluster-create"
+    name: "tendrl-1-{clustername}-cluster-create"
     display-name: '1 - {clustername} Cluster create'
     description: 'Do not edit this job through the web! Deploy machines for testing.'
     project-type: freestyle
@@ -71,20 +71,20 @@
  
     publishers:
       - trigger-parameterized-builds:
-        - project: '2-{clustername}-cluster-install'
+        - project: 'tendrl-2-{clustername}-cluster-install'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'X-{clustername}-cluster-teardown'
+        - project: 'tendrl-X-{clustername}-cluster-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "2-{clustername}-cluster-install"
+    name: "tendrl-2-{clustername}-cluster-install"
     display-name: '2 - {clustername} Cluster install'
     description: 'Do not edit this job through the web!'
     scm:
@@ -154,20 +154,20 @@
 
     publishers:
       - trigger-parameterized-builds:
-        - project: '3-{clustername}-cluster-test'
+        - project: 'tendrl-3-{clustername}-cluster-test'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'X-{clustername}-cluster-teardown'
+        - project: 'tendrl-X-{clustername}-cluster-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "3-{clustername}-cluster-test"
+    name: "tendrl-3-{clustername}-cluster-test"
     display-name: '3 - {clustername} Cluster test'
     description: 'Do not edit this job through the web!'
     scm:
@@ -249,7 +249,7 @@
       #          format: 'csv'
       #          inclusion-flag: 'off'
       - trigger-parameterized-builds:
-        - project: 'X-{clustername}-cluster-teardown'
+        - project: 'tendrl-X-{clustername}-cluster-teardown'
           current-parameters: true
           node-parameters: true
           condition: ALWAYS
@@ -291,7 +291,7 @@
 
 
 - job-template:
-    name: "X-{clustername}-cluster-teardown"
+    name: "tendrl-X-{clustername}-cluster-teardown"
     display-name: 'X - {clustername} Cluster teardown'
     description: 'Do not edit this job through the web! Return machines back to pool.'
     project-type: freestyle
@@ -352,10 +352,10 @@
 - job-group:
     name: 'tendrl-jobs'
     jobs:
-    - '1-{clustername}-cluster-create'
-    - '2-{clustername}-cluster-install'
-    - '3-{clustername}-cluster-test'
-    - 'X-{clustername}-cluster-teardown'
+    - 'tendrl-1-{clustername}-cluster-create'
+    - 'tendrl-2-{clustername}-cluster-install'
+    - 'tendrl-3-{clustername}-cluster-test'
+    - 'tendrl-X-{clustername}-cluster-teardown'
 
 - project:
     name: "tendrl-deploy"

@@ -1,0 +1,374 @@
+- job-template:
+    name: "1-{clustername}-cluster-create"
+    display-name: '1 - {clustername} Cluster create'
+    description: 'Do not edit this job through the web! Deploy machines for testing.'
+    project-type: freestyle
+    defaults: global
+    parameters:
+        - choice:
+            name: CLUSTER_CONFIGURATION
+            choices: "{obj:cluster_configuration_choices}"
+            description: "Cluster configuration (definition)."
+        - string:
+            name: ENABLE_REPO
+            default: "epel"
+            description: "Enable additional repository (e.g. epel)"
+        - choice:
+            name: INSTALL_FROM
+            choices:
+              - "packages"
+              - "source"
+            description: "Use installation from sources."
+
+    scm:
+        - git:
+            url: 'https://github.com/mkudlej/usmqe-centos-ci.git'
+            branches:
+                - "*/master"
+            basedir: usmqe-centos-ci
+            skip-tag: true
+            wipe-workspace: true
+
+    disabled: "{obj:disabled}"
+    triggers:
+      - timed: '{timed}'
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - "1-.*-cluster-create"
+    wrappers:
+        - ansicolor:
+            colormap: "xterm"
+        - timeout:
+            timeout: '{timeout}'
+            abort: true
+            type: absolute
+    node: '{node}'
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+            # Get machines from CentOS CI pool
+            env
+            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/{clustername}.yml
+        - shell: |
+            #!/bin/bash -x
+            # Print Ansible host file
+            cat ${{HOME}}/{clustername}.hosts
+        - shell: |
+            #!/bin/bash -x
+            # Prepare 2 disks in all Gluster machines
+            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv -e devices_count=2 ${{ANSIBLE_DIR}}/centos-devices.yml
+ 
+    publishers:
+      - trigger-parameterized-builds:
+        - project: '2-{clustername}-cluster-install'
+          current-parameters: true
+          node-parameters: true
+          condition: SUCCESS
+
+      - trigger-parameterized-builds:
+        - project: 'X-{clustername}-cluster-teardown'
+          current-parameters: true
+          node-parameters: true
+          condition: FAILED
+
+
+- job-template:
+    name: "2-{clustername}-cluster-install"
+    display-name: '2 - {clustername} Cluster install'
+    description: 'Do not edit this job through the web!'
+    scm:
+        - git:
+            url: 'https://github.com/dahorak/ansible-gluster.git'
+            branches:
+                - "*/master"
+            basedir: ansible-gluster
+            skip-tag: true
+            wipe-workspace: true
+        - git:
+            url: 'https://github.com/Tendrl/usmqe-setup.git'
+            branches:
+                - "*/tendrl-setup-jenkins"
+            basedir: usmqe-setup
+            skip-tag: true
+            wipe-workspace: true
+    project-type: freestyle
+    defaults: global
+    parameters:
+        - string:
+            name: ENABLE_REPO
+            default: "epel"
+            description: "Enable additional repository (e.g. epel)"
+        - choice:
+            name: INSTALL_FROM
+            choices:
+              - "packages"
+              - "source"
+            description: "Use installation from sources."
+
+    disabled: false
+    triggers:
+      - timed: ''
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+        - ansicolor:
+            colormap: "xterm"
+    node: '{node}'
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+            cd usmqe-setup
+            export ANSIBLE_LIBRARY=${{WORKSPACE}}/ansible-gluster/
+            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
+              ${{WORKSPACE}}/usmqe-setup/qe_server.yml \
+              -e 'usmqe_tests_repo=https://github.com/fbalak/usmqe-tests.git usmqe_tests_version=tendrl-test-fbalak'
+        - shell: |
+            #!/bin/bash -x
+            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
+              ${{WORKSPACE}}/usmqe-setup/qe_server_sshkey.yml
+            #cat ${{HOME}}/{clustername}.hosts
+
+        - shell: |
+            #!/bin/bash -x
+            qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+            scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/{clustername}.hosts
+            ssh usmqe@${{qe_server}} "cd /home/usmqe/usmqe-setup; git checkout tendrl-setup-jenkins"
+            ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
+              ansible-playbook -i /home/usmqe/{clustername}.hosts -vvv \
+              /home/usmqe/usmqe-setup/tendrl.yml \
+              -e 'enable_repo=${{ENABLE_REPO}} install_from=${{INSTALL_FROM}}'"
+
+
+    publishers:
+      - trigger-parameterized-builds:
+        - project: '3-{clustername}-cluster-test'
+          current-parameters: true
+          node-parameters: true
+          condition: SUCCESS
+
+      - trigger-parameterized-builds:
+        - project: 'X-{clustername}-cluster-teardown'
+          current-parameters: true
+          node-parameters: true
+          condition: FAILED
+
+
+- job-template:
+    name: "3-{clustername}-cluster-test"
+    display-name: '3 - {clustername} Cluster test'
+    description: 'Do not edit this job through the web!'
+    scm:
+        - git:
+            url: 'https://github.com/fbalak/usmqe-tests.git'
+            branches:
+                - "*/tendrl-test-fbalak"
+            basedir: usmqe-tests
+            skip-tag: true
+            wipe-workspace: true
+    project-type: freestyle
+    defaults: global
+    parameters:
+        - string:
+            name: API_TEST_LIST
+            default:  usmqe_tests/tendrlapi/
+            description: "List of tests to execute (and any additional parameter for py.test)."
+
+    disabled: false
+    triggers:
+      - timed: ''
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+        - ansicolor:
+            colormap: "xterm"
+    node: '{node}'
+    builders:
+        - shell: |
+            #!/bin/bash -x
+            #cd usmqe-tests
+            ## prepare hosts file
+            qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+            scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+            # prepare required variables
+            usm_server=$(grep -A1 '\[usm_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+            # prepare configuration file
+            echo "" > usm.ini
+            echo "[usmqepytest]" >> usm.ini
+            echo "usm_log_level = DEBUG" >> usm.ini
+            echo "usm_username = admin" >> usm.ini
+            echo "usm_password = admin" >> usm.ini
+            echo "usm_web_url = https://${{usm_server}}" >> usm.ini
+            echo "usm_api_url = http://${{usm_server}}:9292/1.0/" >> usm.ini
+            echo "etcd_api_url = http://${{usm_server}}:2379/v2/" >> usm.ini
+            echo "usm_ca_cert = " >> usm.ini
+            echo "usm_brick_path = /bricks/b1/data" >> usm.ini
+            echo "usm_gluster_role = gluster" >> usm.ini
+            echo "usm_volume_name = TestVolume" >> usm.ini
+            scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+            # prepare env
+            ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+              scl enable rh-python35 'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
+              source /opt/rh/rh-python35/enable ; \
+              export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+              env ; \
+              cd /home/usmqe/usmqe-tests/; \
+              sed -i \"s|        kwargs\['verbose_lvl'\] = 1|        kwargs['verbose_lvl'] = 0|\" plugin/log_assert.py \
+              cat conf/usm.hosts ; \
+              cat conf/usm.ini ; \
+              py.test --junit-xml=logs/result.xml -sv ${{API_TEST_LIST}}"
+            scp usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs/result.xml result.xml
+
+        - shell: |
+            #!/bin/bash -x
+            #cat ${{HOME}}/{clustername}.hosts
+    publishers:
+      #- plot:
+      #    - title: 'TestResults'
+      #      yaxis: ''
+      #      csv-file-name: 'testresults.csv'
+      #      group: 'TestResults'
+      #      style: 'line'
+      #      use-description: false
+      #      series:
+      #        - file: 'raut-core/logs/testresult.csv'
+      #          format: 'csv'
+      #          inclusion-flag: 'off'
+      - trigger-parameterized-builds:
+        - project: 'X-{clustername}-cluster-teardown'
+          current-parameters: true
+          node-parameters: true
+          condition: ALWAYS
+
+      - ircbot:
+          strategy: all
+          notify-start: false
+          notify-committers: false
+          notify-culprits: false
+          notify-upstream: false
+          notify-fixers: false
+          message-type: summary
+      #- junit:
+      #-   results: usmqe-tests/result.xml
+      #-   #keep-long-stdio: false
+      #-   #health-scale-factor: 1.0
+      #-   #allow-empty-results: true
+      #-   test-stability: true
+      #-   #claim-build: true
+      #-   measurement-plots: true
+      #-   #flaky-test-reports: true
+
+      - xunit:
+          thresholdmode: 'number'
+          thresholds:
+              - failed:
+                    unstable: 0
+                    unstablenew: 0
+                    failure: 0
+                    failurenew: 0
+              - skipped:
+                    unstable: 0
+                    unstablenew: 0
+                    failure: 0
+                    failurenew: 0
+          types:
+              - junit:
+                  pattern: "result.xml"
+
+
+- job-template:
+    name: "X-{clustername}-cluster-teardown"
+    display-name: 'X - {clustername} Cluster teardown'
+    description: 'Do not edit this job through the web! Return machines back to pool.'
+    project-type: freestyle
+    defaults: global
+    disabled: "{obj:disabled}"
+    triggers:
+      - timed: '{timed}'
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - "X-.*-cluster-teardown"
+    
+    scm:
+        - git:
+            url: 'https://github.com/mkudlej/usmqe-centos-ci.git'
+            branches:
+                - "*/master"
+            basedir: usmqe-centos-ci
+            skip-tag: true
+            wipe-workspace: true
+
+    wrappers:
+        - ansicolor:
+            colormap: "xterm"
+        - timeout:
+            timeout: '{timeout}'
+            abort: true
+            type: absolute
+    node: '{node}'
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+            # Return machines to CentOS CI pool
+            env
+            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/centos-teardown.yml
+        - shell: |
+            #!/bin/bash -x
+            # Make sure that all machines return to pool
+            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/centos-inventory.yml
+            if [ "$?" == "0" ]; then 
+              echo "There are still machine for cluster {clustername} which should be returned to pool."
+              exit 1;
+            else
+              exit 0;
+            fi
+
+- job-group:
+    name: 'tendrl-jobs'
+    jobs:
+    - '1-{clustername}-cluster-create'
+    - '2-{clustername}-cluster-install'
+    - '3-{clustername}-cluster-test'
+    - 'X-{clustername}-cluster-teardown'
+
+- project:
+    name: "tendrl-deploy"
+    jobs:
+      - 'tendrl-jobs'
+    clustername:
+      - centos-tendrl1:
+          timed: ''
+          timeout: 60
+          disabled: false
+          node: 'tendrl-ci-slave01'
+          run_api_tests: false
+          run_web_tests: false
+          cluster_configuration_choices:
+            - gluster2
+

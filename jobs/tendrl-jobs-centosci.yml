@@ -98,7 +98,7 @@
         - git:
             url: 'https://github.com/Tendrl/usmqe-setup.git'
             branches:
-                - "*/tendrl-setup-jenkins"
+                - "*/master"
             basedir: usmqe-setup
             skip-tag: true
             wipe-workspace: true
@@ -148,7 +148,7 @@
             ssh usmqe@${{qe_server}} "cd /home/usmqe/usmqe-setup; git checkout tendrl-setup-jenkins"
             ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
               ansible-playbook -i /home/usmqe/{clustername}.hosts -vvv \
-              /home/usmqe/usmqe-setup/tendrl.yml \
+              /home/usmqe/usmqe-setup/tendrl_gluster_peers_bricks.yml \
               -e 'enable_repo=${{ENABLE_REPO}} install_from=${{INSTALL_FROM}}'"
 
 

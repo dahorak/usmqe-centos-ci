@@ -9,10 +9,12 @@
             name: CLUSTER_CONFIGURATION
             choices: "{obj:cluster_configuration_choices}"
             description: "Cluster configuration (definition)."
-        - string:
-            name: ENABLE_REPO
-            default: "epel"
-            description: "Enable additional repository (e.g. epel)"
+        - choice:
+            name: EPEL_ENABLED
+            choices:
+              - "1"
+              - "0"
+            description: "Enable Epel repository."
         - choice:
             name: INSTALL_FROM
             choices:
@@ -105,10 +107,12 @@
     project-type: freestyle
     defaults: global
     parameters:
-        - string:
-            name: ENABLE_REPO
-            default: "epel"
-            description: "Enable additional repository (e.g. epel)"
+        - choice:
+            name: EPEL_ENABLED
+            choices:
+              - "1"
+              - "0"
+            description: "Enable Epel repository."
         - choice:
             name: INSTALL_FROM
             choices:
@@ -149,7 +153,7 @@
             ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
               ansible-playbook -i /home/usmqe/{clustername}.hosts -vvv \
               /home/usmqe/usmqe-setup/tendrl_gluster_peers_bricks.yml \
-              -e 'enable_repo=${{ENABLE_REPO}} install_from=${{INSTALL_FROM}}'"
+              -e 'epel_enabled=${{EPEL_ENABLED}} install_from=${{INSTALL_FROM}}'"
 
 
     publishers:

@@ -149,7 +149,6 @@
             #!/bin/bash -x
             qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
             scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/{clustername}.hosts
-            ssh usmqe@${{qe_server}} "cd /home/usmqe/usmqe-setup; git checkout tendrl-setup-jenkins"
             ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
               ansible-playbook -i /home/usmqe/{clustername}.hosts -vvv \
               /home/usmqe/usmqe-setup/tendrl_gluster_peers_bricks.yml \

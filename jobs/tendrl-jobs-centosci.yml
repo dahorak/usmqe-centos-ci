@@ -222,6 +222,7 @@
             echo "usm_brick_path = /bricks/b1/data" >> usm.ini
             echo "usm_gluster_role = gluster" >> usm.ini
             echo "usm_volume_name = TestVolume" >> usm.ini
+            echo "usm_gluster_version = 3.8.3" >> usm.ini
             scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
             # prepare env
             ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \

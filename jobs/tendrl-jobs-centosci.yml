@@ -137,8 +137,7 @@
             cd usmqe-setup
             export ANSIBLE_LIBRARY=${{WORKSPACE}}/ansible-gluster/
             ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
-              ${{WORKSPACE}}/usmqe-setup/qe_server.yml \
-              -e 'usmqe_tests_repo=https://github.com/fbalak/usmqe-tests.git usmqe_tests_version=tendrl-test-fbalak'
+              ${{WORKSPACE}}/usmqe-setup/qe_server.yml
         - shell: |
             #!/bin/bash -x
             ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
@@ -175,9 +174,9 @@
     description: 'Do not edit this job through the web!'
     scm:
         - git:
-            url: 'https://github.com/fbalak/usmqe-tests.git'
+            url: 'https://github.com/Tendrl/usmqe-tests.git'
             branches:
-                - "*/tendrl-test-fbalak"
+                - "*/master"
             basedir: usmqe-tests
             skip-tag: true
             wipe-workspace: true

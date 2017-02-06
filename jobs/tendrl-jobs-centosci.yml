@@ -185,7 +185,7 @@
     parameters:
         - string:
             name: API_TEST_LIST
-            default:  usmqe_tests/tendrlapi/
+            default: usmqe_tests/api/tendrl/
             description: "List of tests to execute (and any additional parameter for py.test)."
 
     disabled: false
@@ -233,7 +233,7 @@
               sed -i \"s|        kwargs\['verbose_lvl'\] = 1|        kwargs['verbose_lvl'] = 0|\" plugin/log_assert.py \
               cat conf/usm.hosts ; \
               cat conf/usm.ini ; \
-              py.test --junit-xml=logs/result.xml -sv ${{API_TEST_LIST}}"
+              py.test --junit-xml=logs/result.xml -svvvrx ${{API_TEST_LIST}}"
             scp usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs/result.xml result.xml
 
         - shell: |

@@ -3,17 +3,17 @@
   add_host:
     name="{{ item }}"
     groups="usm_nodes"
-  with_items: "{{ tendrlhosts[1:] }}"
+  with_items: "{{ tendrlhosts[2:] }}"
 
 - name: Add hosts to gluster group
   add_host:
     name="{{ item }}"
     groups="gluster"
-  with_items: "{{ tendrlhosts[1:] }}"
+  with_items: "{{ tendrlhosts[2:] }}"
 
 - name: Add one of hosts to usm_server group
   add_host:
-    name="{{ tendrlhosts[0] }}"
+    name="{{ tendrlhosts[1] }}"
     groups="usm_server"
 
 - name: Add one of hosts to qe_server group

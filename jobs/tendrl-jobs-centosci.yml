@@ -1,30 +1,12 @@
 - job-template:
-    name: "1-{clustername}-cluster-create"
+    name: "tendrl-1-{clustername}-create"
     display-name: 'Tendrl - 1 - {clustername} Cluster create'
     description: 'Do not edit this job through the web! Deploy machines for testing.'
     project-type: freestyle
     defaults: global
-    parameters:
-        - choice:
-            name: CLUSTER_CONFIGURATION
-            choices: "{obj:cluster_configuration_choices}"
-            description: "Cluster configuration (definition)."
-        - choice:
-            name: EPEL_ENABLED
-            choices:
-              - "1"
-              - "0"
-            description: "Enable Epel repository."
-        - choice:
-            name: INSTALL_FROM
-            choices:
-              - "packages"
-              - "source"
-            description: "Use installation from sources."
-
     scm:
         - git:
-            url: 'https://github.com/mkudlej/usmqe-centos-ci.git'
+            url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
             branches:
                 - "*/master"
             basedir: usmqe-centos-ci
@@ -42,7 +24,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - "1-.*-cluster-create"
+            - "tendrl-.*"
     wrappers:
         - ansicolor:
             colormap: "xterm"
@@ -73,20 +55,20 @@
  
     publishers:
       - trigger-parameterized-builds:
-        - project: '2-{clustername}-cluster-install'
+        - project: 'tendrl-2-{clustername}-install'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'X-{clustername}-cluster-teardown'
+        - project: 'tendrl-X-{clustername}-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "2-{clustername}-cluster-install"
+    name: "tendrl-2-{clustername}-install"
     display-name: 'Tendrl - 2 - {clustername} Cluster install'
     description: 'Do not edit this job through the web!'
     scm:
@@ -106,19 +88,6 @@
             wipe-workspace: true
     project-type: freestyle
     defaults: global
-    parameters:
-        - choice:
-            name: EPEL_ENABLED
-            choices:
-              - "1"
-              - "0"
-            description: "Enable Epel repository."
-        - choice:
-            name: INSTALL_FROM
-            choices:
-              - "packages"
-              - "source"
-            description: "Use installation from sources."
 
     disabled: false
     triggers:
@@ -130,7 +99,7 @@
     wrappers:
         - ansicolor:
             colormap: "xterm"
-    node: '{node}'
+    node: {node}'
     builders:
         - shell: |
             #!/bin/bash -xe
@@ -150,26 +119,25 @@
             scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/{clustername}.hosts
             ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
               ansible-playbook -i /home/usmqe/{clustername}.hosts -vvv \
-              /home/usmqe/usmqe-setup/tendrl_gluster_peers_bricks.yml \
-              -e 'epel_enabled=${{EPEL_ENABLED}} install_from=${{INSTALL_FROM}}'"
+              /home/usmqe/usmqe-setup/ci_default.yml"
 
 
     publishers:
       - trigger-parameterized-builds:
-        - project: '3-{clustername}-cluster-test'
+        - project: 'tendrl-3-{clustername}-test-gluster-api'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'X-{clustername}-cluster-teardown'
+        - project: 'tendrl-X-{clustername}-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "3-{clustername}-cluster-test"
+    name: "tendrl-3-{clustername}-test-gluster-api"
     display-name: 'Tendrl - 3 - {clustername} Cluster test'
     description: 'Do not edit this job through the web!'
     scm:
@@ -184,8 +152,8 @@
     defaults: global
     parameters:
         - string:
-            name: API_TEST_LIST
-            default: usmqe_tests/api/tendrl/
+            name: TEST_LIST
+            default: others,gluster
             description: "List of tests to execute (and any additional parameter for py.test)."
 
     disabled: false
@@ -198,7 +166,7 @@
     wrappers:
         - ansicolor:
             colormap: "xterm"
-    node: '{node}'
+    node: {node}'
     builders:
         - shell: |
             #!/bin/bash -x
@@ -223,6 +191,10 @@
             echo "usm_volume_name = TestVolume" >> usm.ini
             echo "usm_gluster_version = 3.8.3" >> usm.ini
             scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+            tests=""
+            for test in ${{TEST_LIST//[_,]/ }}; do
+              tests="${{tests}} usmqe_tests/api/tendrl/${{test}}";
+            done
             # prepare env
             ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
               scl enable rh-python35 'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
@@ -233,15 +205,15 @@
               sed -i \"s|        kwargs\['verbose_lvl'\] = 1|        kwargs['verbose_lvl'] = 0|\" plugin/log_assert.py \
               cat conf/usm.hosts ; \
               cat conf/usm.ini ; \
-              py.test --junit-xml=logs/result.xml -svvvrx ${{API_TEST_LIST}}"
-            scp usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs/result.xml result.xml
+              py.test --junit-xml=logs/result.xml -vvvrx ${{tests}}"
+            scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
 
         - shell: |
             #!/bin/bash -x
             #cat ${{HOME}}/{clustername}.hosts
     publishers:
       - trigger-parameterized-builds:
-        - project: 'X-{clustername}-cluster-teardown'
+        - project: 'tendrl-X-{clustername}-teardown'
           current-parameters: true
           node-parameters: true
           condition: ALWAYS
@@ -260,11 +232,11 @@
                     failurenew: 0
           types:
               - junit:
-                  pattern: "result.xml"
+                  pattern: "logs/result.xml"
 
 
 - job-template:
-    name: "X-{clustername}-cluster-teardown"
+    name: "tendrl-X-{clustername}-teardown"
     display-name: 'Tendrl - X - {clustername} Cluster teardown'
     description: 'Do not edit this job through the web! Return machines back to pool.'
     project-type: freestyle
@@ -280,7 +252,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - "X-.*-cluster-teardown"
+            - "tendrl-.*"
     
     scm:
         - git:
@@ -298,7 +270,7 @@
             timeout: '{timeout}'
             abort: true
             type: absolute
-    node: '{node}'
+    node: {node}'
     builders:
         - shell: |
             #!/bin/bash -xe
@@ -325,10 +297,10 @@
 - job-group:
     name: 'tendrl-jobs'
     jobs:
-    - '1-{clustername}-cluster-create'
-    - '2-{clustername}-cluster-install'
-    - '3-{clustername}-cluster-test'
-    - 'X-{clustername}-cluster-teardown'
+    - 'tendrl-1-{clustername}-create'
+    - 'tendrl-2-{clustername}-install'
+    - 'tendrl-3-{clustername}-test-gluster-api'
+    - 'tendrl-X-{clustername}-teardown'
 
 - project:
     name: "tendrl-deploy"
@@ -340,8 +312,3 @@
           timeout: 60
           disabled: false
           node: 'tendrl-ci-slave01'
-          run_api_tests: false
-          run_web_tests: false
-          cluster_configuration_choices:
-            - gluster2
-

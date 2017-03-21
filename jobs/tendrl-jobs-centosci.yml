@@ -99,7 +99,7 @@
     wrappers:
         - ansicolor:
             colormap: "xterm"
-    node: {node}'
+    node: '{node}'
     builders:
         - shell: |
             #!/bin/bash -xe
@@ -166,7 +166,7 @@
     wrappers:
         - ansicolor:
             colormap: "xterm"
-    node: {node}'
+    node: '{node}'
     builders:
         - shell: |
             #!/bin/bash -x
@@ -270,7 +270,7 @@
             timeout: '{timeout}'
             abort: true
             type: absolute
-    node: {node}'
+    node: '{node}'
     builders:
         - shell: |
             #!/bin/bash -xe

@@ -1,0 +1,5 @@
+---
+- name: Prepare disk devices for creating Ceph OSDs
+  hosts: ceph_osd
+  roles:
+  - role: createiscsidevices

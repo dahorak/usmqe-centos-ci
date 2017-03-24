@@ -1,6 +1,6 @@
 - job-template:
-    name: "tendrl2-1-{clustername}-create"
-    display-name: 'Tendrl2 - 1 - {clustername} Cluster create'
+    name: "tendrl0-1-{clustername}-prepare"
+    display-name: 'Tendrl0 - 1 - {clustername} prepare environment'
     description: 'Do not edit this job through the web! Deploy machines for testing.'
     project-type: freestyle
     defaults: global
@@ -10,6 +10,13 @@
             branches:
                 - "*/master"
             basedir: usmqe-centos-ci
+            skip-tag: true
+            wipe-workspace: true
+        - git:
+            url: 'https://github.com/Tendrl/usmqe-setup.git'
+            branches:
+                - "*/master"
+            basedir: usmqe-setup
             skip-tag: true
             wipe-workspace: true
 
@@ -41,70 +48,14 @@
             cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
             ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
             CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
-            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/{clustername}.yml
+            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/{clustername}-prepare.yml
         - shell: |
             #!/bin/bash -x
             # Print Ansible host file
             cat ${{HOME}}/{clustername}.hosts
         - shell: |
-            #!/bin/bash -x
-            # Prepare 2 disks in all Gluster machines
-            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
-            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
-            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv -e devices_count=2 ${{ANSIBLE_DIR}}/centos-devices.yml
- 
-    publishers:
-      - trigger-parameterized-builds:
-        - project: 'tendrl2-2-{clustername}-install'
-          current-parameters: true
-          node-parameters: true
-          condition: SUCCESS
-
-      - trigger-parameterized-builds:
-        - project: 'tendrl2-X-{clustername}-teardown'
-          current-parameters: true
-          node-parameters: true
-          condition: FAILED
-
-
-- job-template:
-    name: "tendrl2-2-{clustername}-install"
-    display-name: 'Tendrl2 - 2 - {clustername} Cluster install'
-    description: 'Do not edit this job through the web!'
-    scm:
-        - git:
-            url: 'https://github.com/dahorak/ansible-gluster.git'
-            branches:
-                - "*/master"
-            basedir: ansible-gluster
-            skip-tag: true
-            wipe-workspace: true
-        - git:
-            url: 'https://github.com/Tendrl/usmqe-setup.git'
-            branches:
-                - "*/master"
-            basedir: usmqe-setup
-            skip-tag: true
-            wipe-workspace: true
-    project-type: freestyle
-    defaults: global
-
-    disabled: false
-    triggers:
-      - timed: ''
-    concurrent: false
-    quiet-period: 5
-    block-downstream: true
-    block-upstream: true
-    wrappers:
-        - ansicolor:
-            colormap: "xterm"
-    node: '{node}'
-    builders:
-        - shell: |
             #!/bin/bash -xe
             cd usmqe-setup
-            export ANSIBLE_LIBRARY=${{WORKSPACE}}/ansible-gluster/
             ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
               ${{WORKSPACE}}/usmqe-setup/qe_server.yml
         - shell: |
@@ -113,32 +64,24 @@
               ${{WORKSPACE}}/usmqe-setup/qe_server_sshkey.yml
             #cat ${{HOME}}/{clustername}.hosts
 
-        - shell: |
-            #!/bin/bash -x
-            qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
-            scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/{clustername}.hosts
-            ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
-              ansible-playbook -i /home/usmqe/{clustername}.hosts -vvv \
-              /home/usmqe/usmqe-setup/ci_default.yml"
-
 
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl2-3-{clustername}-test-gluster-api'
+        - project: 'tendrl0-2-{clustername}-test-rpm'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'tendrl2-X-{clustername}-teardown'
+        - project: 'tendrl0-X-{clustername}-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "tendrl2-3-{clustername}-test-gluster-api"
-    display-name: 'Tendrl2 - 3 - {clustername} Cluster test'
+    name: "tendrl0-2-{clustername}-test-rpm"
+    display-name: 'Tendrl0 - 2 - {clustername} - Test RPMs'
     description: 'Do not edit this job through the web!'
     scm:
         - git:
@@ -152,9 +95,13 @@
     defaults: global
     parameters:
         - string:
-            name: TEST_LIST
-            default: others,gluster
-            description: "List of tests to execute (and any additional parameter for py.test)."
+            name: USM_REPO
+            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
+            description: "USM Repo URL"
+        - string:
+            name: USM_REPO_GPGKEY
+            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+            description: "USM Repo URL"
 
     disabled: false
     triggers:
@@ -175,26 +122,13 @@
             qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
             scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
             # prepare required variables
-            usm_server=$(grep -A1 '\[usm_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
-            # prepare configuration file
             echo "" > usm.ini
             echo "[usmqepytest]" >> usm.ini
             echo "usm_log_level = DEBUG" >> usm.ini
-            echo "usm_username = admin" >> usm.ini
-            echo "usm_password = admin" >> usm.ini
-            echo "usm_web_url = https://${{usm_server}}" >> usm.ini
-            echo "usm_api_url = http://${{usm_server}}:9292/1.0/" >> usm.ini
-            echo "etcd_api_url = http://${{usm_server}}:2379/v2/" >> usm.ini
-            echo "usm_ca_cert = " >> usm.ini
-            echo "usm_brick_path = /bricks/b1/data" >> usm.ini
-            echo "usm_gluster_role = gluster" >> usm.ini
-            echo "usm_volume_name = TestVolume" >> usm.ini
-            echo "usm_gluster_version = 3.8.3" >> usm.ini
+            echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
+            echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
             scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
-            tests=""
-            for test in ${{TEST_LIST//[_,]/ }}; do
-              tests="${{tests}} usmqe_tests/api/tendrl/${{test}}";
-            done
+            test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py";
             # prepare env
             ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
               scl enable rh-python35 'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
@@ -202,22 +136,118 @@
               export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
               env ; \
               cd /home/usmqe/usmqe-tests/; \
-              sed -i \"s|        kwargs\['verbose_lvl'\] = 1|        kwargs['verbose_lvl'] = 0|\" plugin/log_assert.py \
               cat conf/usm.hosts ; \
               cat conf/usm.ini ; \
-              py.test --junit-xml=logs/result.xml -vvvrx ${{tests}}"
+              echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+              py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+            pwd
+            echo "qe_server=${{qe_server}}"
+            echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
             scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
             sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
-
         - shell: |
             #!/bin/bash -x
             #cat ${{HOME}}/{clustername}.hosts
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl2-X-{clustername}-teardown'
+        - project: 'tendrl0-3-{clustername}-test-install'
           current-parameters: true
           node-parameters: true
           condition: ALWAYS
+
+      - xunit:
+          thresholdmode: 'number'
+          thresholds:
+              - failed:
+                    unstable: 0
+                    unstablenew: 0
+                    failure: 0
+                    failurenew: 0
+              - skipped:
+                    unstable: 0
+                    unstablenew: 0
+                    failure: 0
+                    failurenew: 0
+          types:
+              - junit:
+                  pattern: "logs/result.xml"
+
+- job-template:
+    name: "tendrl0-3-{clustername}-test-install"
+    display-name: 'Tendrl0 - 3 - {clustername} - Test Installation'
+    description: 'Do not edit this job through the web!'
+    scm:
+        - git:
+            url: 'https://github.com/Tendrl/usmqe-tests.git'
+            branches:
+                - "*/master"
+            basedir: usmqe-tests
+            skip-tag: true
+            wipe-workspace: true
+    project-type: freestyle
+    defaults: global
+    parameters:
+        - string:
+            name: USM_REPO
+            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
+            description: "USM Repo URL"
+        - string:
+            name: USM_REPO_GPGKEY
+            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+            description: "USM Repo URL"
+
+    disabled: false
+    triggers:
+      - timed: ''
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+        - ansicolor:
+            colormap: "xterm"
+    node: '{node}'
+    builders:
+        - shell: |
+            #!/bin/bash -x
+            #cd usmqe-tests
+            ## prepare hosts file
+            qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+            scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+            # prepare required variables
+            echo "" > usm.ini
+            echo "[usmqepytest]" >> usm.ini
+            echo "usm_log_level = DEBUG" >> usm.ini
+            echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
+            echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+            scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+            test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_install.py";
+            # prepare env
+            ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+              scl enable rh-python35 'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
+              source /opt/rh/rh-python35/enable ; \
+              export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+              env ; \
+              cd /home/usmqe/usmqe-tests/; \
+              cat conf/usm.hosts ; \
+              cat conf/usm.ini ; \
+              echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+              py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+            pwd
+            echo "qe_server=${{qe_server}}"
+            echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+            scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+            sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+        - shell: |
+            #!/bin/bash -x
+            #cat ${{HOME}}/{clustername}.hosts
+    publishers:
+      - trigger-parameterized-builds:
+        - project: 'tendrl0-X-{clustername}-teardown'
+          current-parameters: true
+          node-parameters: true
+          condition: ALWAYS
+
       - xunit:
           thresholdmode: 'number'
           thresholds:
@@ -237,14 +267,14 @@
 
 
 - job-template:
-    name: "tendrl2-X-{clustername}-teardown"
-    display-name: 'Tendrl2 - X - {clustername} Cluster teardown'
+    name: "tendrl0-X-{clustername}-teardown"
+    display-name: 'Tendrl0 - X - {clustername} Teardown'
     description: 'Do not edit this job through the web! Return machines back to pool.'
     project-type: freestyle
     defaults: global
     disabled: "{obj:disabled}"
     triggers:
-      - timed: '{timed}'
+      - timed: ''
     concurrent: false
     quiet-period: 5
     block-downstream: true
@@ -253,11 +283,11 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - "tendrl.*"
+            - "tendrl0-.*"
     
     scm:
         - git:
-            url: 'https://github.com/mkudlej/usmqe-centos-ci.git'
+            url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
             branches:
                 - "*/master"
             basedir: usmqe-centos-ci
@@ -296,20 +326,20 @@
             fi
 
 - job-group:
-    name: 'tendrl-jobs'
+    name: 'tendrl-package-navigation-jobs'
     jobs:
-    - 'tendrl2-1-{clustername}-create'
-    - 'tendrl2-2-{clustername}-install'
-    - 'tendrl2-3-{clustername}-test-gluster-api'
-    - 'tendrl2-X-{clustername}-teardown'
+    - 'tendrl0-1-{clustername}-prepare'
+    - 'tendrl0-2-{clustername}-test-rpm'
+    - 'tendrl0-3-{clustername}-test-install'
+    - 'tendrl0-X-{clustername}-teardown'
 
 - project:
-    name: "tendrl-deploy"
+    name: "tendrl-package-navigation-project"
     jobs:
-      - 'tendrl-jobs'
+      - 'tendrl-package-navigation-jobs'
     clustername:
-      - centos-tendrl1:
-          timed: 'H 22 * * *'
+      - 'package-validation':
+          timed: '0 */4 * * *'
           timeout: 60
           disabled: false
           node: 'tendrl-ci-slave01'

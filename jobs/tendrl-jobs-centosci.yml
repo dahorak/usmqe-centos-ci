@@ -1,6 +1,6 @@
 - job-template:
-    name: "tendrl-1-{clustername}-create"
-    display-name: 'Tendrl - 1 - {clustername} Cluster create'
+    name: "tendrl2-1-{clustername}-create"
+    display-name: 'Tendrl2 - 1 - {clustername} Cluster create'
     description: 'Do not edit this job through the web! Deploy machines for testing.'
     project-type: freestyle
     defaults: global
@@ -24,7 +24,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - "tendrl-.*"
+            - "tendrl.*"
     wrappers:
         - ansicolor:
             colormap: "xterm"
@@ -55,21 +55,21 @@
  
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-2-{clustername}-install'
+        - project: 'tendrl2-2-{clustername}-install'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'tendrl-X-{clustername}-teardown'
+        - project: 'tendrl2-X-{clustername}-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "tendrl-2-{clustername}-install"
-    display-name: 'Tendrl - 2 - {clustername} Cluster install'
+    name: "tendrl2-2-{clustername}-install"
+    display-name: 'Tendrl2 - 2 - {clustername} Cluster install'
     description: 'Do not edit this job through the web!'
     scm:
         - git:
@@ -124,21 +124,21 @@
 
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-3-{clustername}-test-gluster-api'
+        - project: 'tendrl2-3-{clustername}-test-gluster-api'
           current-parameters: true
           node-parameters: true
           condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'tendrl-X-{clustername}-teardown'
+        - project: 'tendrl2-X-{clustername}-teardown'
           current-parameters: true
           node-parameters: true
           condition: FAILED
 
 
 - job-template:
-    name: "tendrl-3-{clustername}-test-gluster-api"
-    display-name: 'Tendrl - 3 - {clustername} Cluster test'
+    name: "tendrl2-3-{clustername}-test-gluster-api"
+    display-name: 'Tendrl2 - 3 - {clustername} Cluster test'
     description: 'Do not edit this job through the web!'
     scm:
         - git:
@@ -207,13 +207,14 @@
               cat conf/usm.ini ; \
               py.test --junit-xml=logs/result.xml -vvvrx ${{tests}}"
             scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+            sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
 
         - shell: |
             #!/bin/bash -x
             #cat ${{HOME}}/{clustername}.hosts
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-X-{clustername}-teardown'
+        - project: 'tendrl2-X-{clustername}-teardown'
           current-parameters: true
           node-parameters: true
           condition: ALWAYS
@@ -236,8 +237,8 @@
 
 
 - job-template:
-    name: "tendrl-X-{clustername}-teardown"
-    display-name: 'Tendrl - X - {clustername} Cluster teardown'
+    name: "tendrl2-X-{clustername}-teardown"
+    display-name: 'Tendrl2 - X - {clustername} Cluster teardown'
     description: 'Do not edit this job through the web! Return machines back to pool.'
     project-type: freestyle
     defaults: global
@@ -252,7 +253,7 @@
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - "tendrl-.*"
+            - "tendrl.*"
     
     scm:
         - git:
@@ -297,10 +298,10 @@
 - job-group:
     name: 'tendrl-jobs'
     jobs:
-    - 'tendrl-1-{clustername}-create'
-    - 'tendrl-2-{clustername}-install'
-    - 'tendrl-3-{clustername}-test-gluster-api'
-    - 'tendrl-X-{clustername}-teardown'
+    - 'tendrl2-1-{clustername}-create'
+    - 'tendrl2-2-{clustername}-install'
+    - 'tendrl2-3-{clustername}-test-gluster-api'
+    - 'tendrl2-X-{clustername}-teardown'
 
 - project:
     name: "tendrl-deploy"

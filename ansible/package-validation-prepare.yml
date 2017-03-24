@@ -1,0 +1,33 @@
+# Request 1 CentOS 7 x86_64 node (for qe_server)
+---
+- hosts: localhost
+  connection: local
+  pre_tasks:
+    - cico:
+        action=get
+        api_key={{ api_key }}
+        arch=x86_64
+        release=7
+        count=1
+      register: data
+    
+    - debug: msg="Host {{ item.key }} has this ssid {{ item.value.comment }}"
+      with_dict: "{{ data.results.hosts }}"
+  
+  tasks:
+    - name: Add one host to qe_server group
+      add_host:
+        name="{{ data.results.hosts.keys()[0] }}"
+        groups="qe_server"
+
+    - name: Create inventory file in tendrl home directory
+      template:
+        src=ansible-hosts.j2
+        dest="{{ home_dir + clustername }}.hosts"
+
+    - name: Create file with ssids in tendrl home directory
+      template:
+        src=ansible-ssid.j2
+        dest="{{ home_dir + clustername }}.ssid"
+      vars:
+        tendrlhosts: "{{ data.results.hosts }}"

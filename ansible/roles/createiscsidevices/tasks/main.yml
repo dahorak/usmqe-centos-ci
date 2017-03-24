@@ -1,0 +1,85 @@
+---
+- debug: var=devices_count
+
+- name: iSCSI - Install required packages
+  yum: name="{{ item }}"
+  with_items:
+  - targetcli
+  - iscsi-initiator-utils
+
+- name: iSCSI - Enable and start required services
+  service: name="{{ item }}" state=started enabled=yes
+  with_items:
+  - target
+  - iscsi
+
+- name: iSCSI target - Create /storage directory
+  file: path=/storage/ state=directory
+
+- name: iSCSI - Prepare IQN
+  shell: "echo iqn.$(date '+%Y-%m.')$(hostname -d | awk -F . '{ for (i=NF; i>1; i--) printf(\"%s.\",$i); print $1;}'):$(hostname -s)"
+  register: iqn
+  changed_when: false
+
+- debug: var=iqn.stdout
+
+- name: iSCSI target - Create backstores/fileio disk file
+  shell: "targetcli backstores/fileio create disk{{ item }} /storage/disk{{ item }}.img {{ device_size }}"
+  with_sequence: count={{ devices_count }}
+  changed_when: result|success
+  register: result
+  failed_when:
+    - "'already exists' not in result.stderr"
+    - "result.rc != 0"
+
+- name: iSCSI target - Create iscsi target
+  shell: "targetcli /iscsi/ create {{ iqn.stdout }}"
+  register: result
+  changed_when: result|success
+  failed_when:
+    - "'already exists' not in result.stderr"
+    - "result.rc != 0"
+
+- name: iSCSI target - Create portal
+  shell: "targetcli /iscsi/{{ iqn.stdout }}/tpg1/portals/ create"
+  register: result
+  changed_when: result|success
+  failed_when:
+    - "'already exists' not in result.stderr"
+    - "result.rc != 0"
+
+- name: iSCSI target - Create LUN
+  shell: "targetcli /iscsi/{{ iqn.stdout }}/tpg1/luns/ create /backstores/fileio/disk{{ item }}"
+  with_sequence: count={{ devices_count }}
+  register: result
+  changed_when: result|success
+  failed_when:
+    - "'already exists' not in result.stderr"
+    - "result.rc != 0"
+
+- name: iSCSI target - Create ACL
+  shell: "targetcli /iscsi/{{ iqn.stdout }}/tpg1/acls create {{ iqn.stdout }}"
+  register: result
+  changed_when: result|success
+  failed_when:
+    - "'already exists' not in result.stderr"
+    - "result.rc != 0"
+
+- name: iSCSI target - save config
+  shell: "targetcli saveconfig"
+  changed_when: result|success
+
+- name: Configure InitiatorName in /etc/iscsi/initiatorname.iscsi
+  lineinfile:
+    name=/etc/iscsi/initiatorname.iscsi
+    regexp="^InitiatorName.*"
+    line='InitiatorName={{ iqn.stdout }}'
+
+- name: iSCSI - restart iscsi service
+  service: name="iscsi" state=restarted
+
+- name: iSCSI - discovery
+  shell: "iscsiadm -m discovery -t st -p {{ ansible_host }}:3260"
+
+- name: iSCSI - node
+  shell: "iscsiadm -m node -T {{ iqn.stdout }} -p {{ ansible_host }}:3260 -l"

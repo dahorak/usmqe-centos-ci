@@ -23,6 +23,6 @@
 
 - name: Create inventory file in tendrl home directory
   template:
-    src=ansible-hosts.j2
+    src=templates/ansible-hosts.j2
     dest="{{ home_dir + clustername }}.hosts"
 

@@ -134,10 +134,7 @@
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmlint";
           # prepare env
           ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-            scl enable rh-python35 \
-              'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
-            source /opt/rh/rh-python35/enable ; \
-            export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
             env ; \
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
@@ -229,10 +226,7 @@
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmdeplint";
           # prepare env
           ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-            scl enable rh-python35 \
-              'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
-            source /opt/rh/rh-python35/enable ; \
-            export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
             env ; \
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
@@ -324,10 +318,7 @@
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repoclosure";
           # prepare env
           ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-            scl enable rh-python35 \
-              'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
-            source /opt/rh/rh-python35/enable ; \
-            export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
             env ; \
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
@@ -418,10 +409,7 @@
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_install.py";
           # prepare env
           ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-            scl enable rh-python35 \
-              'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
-            source /opt/rh/rh-python35/enable ; \
-            export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
             env ; \
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \

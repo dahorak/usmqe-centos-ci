@@ -1,0 +1,55 @@
+# Request CentOS 7 x86_64 nodes for Gluster cluster
+---
+- hosts: localhost
+  connection: local
+  vars:
+    clustername: "cluster-ceph"
+  pre_tasks:
+    - cico:
+        action=get
+        api_key={{ api_key }}
+        arch=x86_64
+        release=7
+        count=6
+      register: data
+    
+    - debug: msg="Host {{ item.key }} has this ssid {{ item.value.comment }}"
+      with_dict: "{{ data.results.hosts }}"
+  
+    # qe_server
+    - name: Add host to group
+      add_host:
+        name="{{ data.results.hosts.keys()[0] }}"
+        groups="qe_server"
+
+    # usm_server
+    - name: Add host to group
+      add_host:
+        name="{{ data.results.hosts.keys()[1] }}"
+        groups="usm_server"
+
+    # usm_nodes
+    - name: Add hosts to group
+      add_host:
+        name="{{ item }}"
+        groups="usm_nodes"
+      with_items: "{{ data.results.hosts.keys()[2:] }}"
+
+    # gluster
+    - name: Add hosts to group
+      add_host:
+        name="{{ item }}"
+        groups="gluster"
+      with_items: "{{ data.results.hosts.keys()[2:] }}"
+
+
+  roles: 
+    - role: saveinventory
+    - role: savessids
+      tendrlhosts: "{{ data.results.hosts }}"
+
+
+- name: Prepare disk devices for gluster
+  hosts: gluster
+  roles:
+  - role: createiscsidevices

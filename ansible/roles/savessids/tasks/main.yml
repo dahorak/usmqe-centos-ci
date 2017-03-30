@@ -4,6 +4,6 @@
 
 - name: Create file with ssids in tendrl home directory
   template:
-    src=ansible-ssid.j2
+    src=templates/ansible-ssid.j2
     dest="{{ home_dir + clustername }}.ssid"
 

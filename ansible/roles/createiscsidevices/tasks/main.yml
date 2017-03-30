@@ -83,3 +83,6 @@
 
 - name: iSCSI - node
   shell: "iscsiadm -m node -T {{ iqn.stdout }} -p {{ ansible_host }}:3260 -l"
+
+- name: List all disks
+  shell: "lsblk"

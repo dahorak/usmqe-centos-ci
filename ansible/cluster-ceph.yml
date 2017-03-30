@@ -1,0 +1,74 @@
+# Request CentOS 7 x86_64 nodes for Ceph cluster
+---
+- hosts: localhost
+  connection: local
+  vars:
+    clustername: "cluster-ceph"
+  pre_tasks:
+    - cico:
+        action=get
+        api_key={{ api_key }}
+        arch=x86_64
+        release=7
+        count=9
+      register: data
+    
+    - debug: msg="Host {{ item.key }} has this ssid {{ item.value.comment }}"
+      with_dict: "{{ data.results.hosts }}"
+  
+    # qe_server
+    - name: Add host to group
+      add_host:
+        name="{{ data.results.hosts.keys()[0] }}"
+        groups="qe_server"
+
+    # usm_server
+    - name: Add host to group
+      add_host:
+        name="{{ data.results.hosts.keys()[1] }}"
+        groups="usm_server"
+
+    # usm_nodes
+    - name: Add hosts to group
+      add_host:
+        name="{{ item }}"
+        groups="usm_nodes"
+      with_items: "{{ data.results.hosts.keys()[2:] }}"
+
+    # ceph_mon
+    - name: Add hosts to group
+      add_host:
+        name="{{ item }}"
+        groups="ceph_mon"
+      with_items: "{{ data.results.hosts.keys()[2:5] }}"
+    # mons 
+    - name: Add hosts to group
+      add_host:
+        name="{{ item }}"
+        groups="mons"
+      with_items: "{{ data.results.hosts.keys()[2:5] }}"
+
+    # ceph_osd
+    - name: Add hosts to group
+      add_host:
+        name="{{ item }}"
+        groups="ceph_osd"
+      with_items: "{{ data.results.hosts.keys()[5:] }}"
+    # osds
+    - name: Add hosts to group
+      add_host:
+        name="{{ item }}"
+        groups="osds"
+      with_items: "{{ data.results.hosts.keys()[5:] }}"
+
+
+  roles: 
+    - role: saveinventory
+    - role: savessids
+      tendrlhosts: "{{ data.results.hosts }}"
+
+
+- name: Prepare disk devices for creating Ceph OSDs
+  hosts: ceph_osd
+  roles:
+  - role: createiscsidevices

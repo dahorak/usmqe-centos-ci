@@ -1,3 +1,4 @@
+---
 - job-template:
     name: "tendrl-0-0-{clustername}-prepare"
     display-name: 'Tendrl-0-0-{clustername} prepare environment'
@@ -5,20 +6,20 @@
     project-type: freestyle
     defaults: global
     scm:
-        - git:
-            url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
-            branches:
-                - "*/master"
-            basedir: usmqe-centos-ci
-            skip-tag: true
-            wipe-workspace: true
-        - git:
-            url: 'https://github.com/Tendrl/usmqe-setup.git'
-            branches:
-                - "*/master"
-            basedir: usmqe-setup
-            skip-tag: true
-            wipe-workspace: true
+      - git:
+          url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-centos-ci
+          skip-tag: true
+          wipe-workspace: true
+      - git:
+          url: 'https://github.com/Tendrl/usmqe-setup.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-setup
+          skip-tag: true
+          wipe-workspace: true
 
     disabled: "{obj:disabled}"
     triggers:
@@ -33,50 +34,52 @@
           blocking-jobs:
             - "tendrl.*"
     wrappers:
-        - ansicolor:
-            colormap: "xterm"
-        - timeout:
-            timeout: '{timeout}'
-            abort: true
-            type: absolute
+      - ansicolor:
+          colormap: "xterm"
+      - timeout:
+          timeout: '{timeout}'
+          abort: true
+          type: absolute
     node: '{node}'
     builders:
-        - shell: |
-            #!/bin/bash -xe
-            # Get machines from CentOS CI pool
-            env
-            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
-            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
-            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
-            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/{clustername}-prepare.yml
-        - shell: |
-            #!/bin/bash -x
-            # Print Ansible host file
-            cat ${{HOME}}/{clustername}.hosts
-        - shell: |
-            #!/bin/bash -xe
-            cd usmqe-setup
-            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
-              ${{WORKSPACE}}/usmqe-setup/qe_server.yml
-        - shell: |
-            #!/bin/bash -x
-            ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
-              ${{WORKSPACE}}/usmqe-setup/qe_server_sshkey.yml
-            #cat ${{HOME}}/{clustername}.hosts
+      - shell: |
+          #!/bin/bash -xe
+          # Get machines from CentOS CI pool
+          env
+          cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+          ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+          CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+          ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv \
+            -e clustername={clustername} -M ${{CICO_DIR}} \
+            ${{ANSIBLE_DIR}}/{clustername}-prepare.yml
+      - shell: |
+          #!/bin/bash -x
+          # Print Ansible host file
+          cat ${{HOME}}/{clustername}.hosts
+      - shell: |
+          #!/bin/bash -xe
+          cd usmqe-setup
+          ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
+            ${{WORKSPACE}}/usmqe-setup/qe_server.yml
+      - shell: |
+          #!/bin/bash -x
+          ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
+            ${{WORKSPACE}}/usmqe-setup/qe_server_sshkey.yml
+          #cat ${{HOME}}/{clustername}.hosts
 
 
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-0-1-{clustername}-rpmlint'
-          current-parameters: true
-          node-parameters: true
-          condition: SUCCESS
+          - project: 'tendrl-0-1-{clustername}-rpmlint'
+            current-parameters: true
+            node-parameters: true
+            condition: SUCCESS
 
       - trigger-parameterized-builds:
-        - project: 'tendrl-0-X-{clustername}-teardown'
-          current-parameters: true
-          node-parameters: true
-          condition: FAILED
+          - project: 'tendrl-0-X-{clustername}-teardown'
+            current-parameters: true
+            node-parameters: true
+            condition: FAILED
 
 
 - job-template:
@@ -84,25 +87,24 @@
     display-name: 'Tendrl-1: rpmlint'
     description: 'Do not edit this job through the web!'
     scm:
-        - git:
-            url: 'https://github.com/Tendrl/usmqe-tests.git'
-            branches:
-                - "*/master"
-            basedir: usmqe-tests
-            skip-tag: true
-            wipe-workspace: true
+      - git:
+          url: 'https://github.com/Tendrl/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
     project-type: freestyle
     defaults: global
     parameters:
-        - string:
-            name: USM_REPO
-            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
-            description: "USM Repo URL"
-        - string:
-            name: USM_REPO_GPGKEY
-            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
-            description: "USM Repo URL"
-
+      - string:
+          name: USM_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+          description: "USM Repo URL"
     disabled: false
     triggers:
       - timed: ''
@@ -111,90 +113,92 @@
     block-downstream: true
     block-upstream: true
     wrappers:
-        - ansicolor:
-            colormap: "xterm"
+      - ansicolor:
+          colormap: "xterm"
     node: '{node}'
     builders:
-        - shell: |
-            #!/bin/bash -x
-            #cd usmqe-tests
-            ## prepare hosts file
-            qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
-            scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
-            # prepare required variables
-            echo "" > usm.ini
-            echo "[usmqepytest]" >> usm.ini
-            echo "usm_log_level = DEBUG" >> usm.ini
-            echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
-            echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
-            scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
-            test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmlint";
-            # prepare env
-            ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-              scl enable rh-python35 'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
-              source /opt/rh/rh-python35/enable ; \
-              export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
-              env ; \
-              cd /home/usmqe/usmqe-tests/; \
-              cat conf/usm.hosts ; \
-              cat conf/usm.ini ; \
-              echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-              py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
-            pwd
-            echo "qe_server=${{qe_server}}"
-            echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
-            scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
-            sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
-        - shell: |
-            #!/bin/bash -x
-            #cat ${{HOME}}/{clustername}.hosts
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+          scp ${{HOME}}/{clustername}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          # prepare required variables
+          echo "" > usm.ini
+          echo "[usmqepytest]" >> usm.ini
+          echo "usm_log_level = DEBUG" >> usm.ini
+          echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
+          echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmlint";
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            scl enable rh-python35 \
+              'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
+            source /opt/rh/rh-python35/enable ; \
+            export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+          pwd
+          echo "qe_server=${{qe_server}}"
+          echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+      - shell: |
+          #!/bin/bash -x
+          #cat ${{HOME}}/{clustername}.hosts
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-0-2-{clustername}-rpmdeplint'
-          current-parameters: true
-          node-parameters: true
-          condition: ALWAYS
+          - project: 'tendrl-0-2-{clustername}-rpmdeplint'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
 
       - xunit:
           thresholdmode: 'number'
           thresholds:
-              - failed:
-                    unstable: 0
-                    unstablenew: 0
-                    failure: 0
-                    failurenew: 0
-              - skipped:
-                    unstable: 0
-                    unstablenew: 0
-                    failure: 0
-                    failurenew: 0
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
           types:
-              - junit:
-                  pattern: "logs/result.xml"
+            - junit:
+                pattern: "logs/result.xml"
 
 - job-template:
     name: "tendrl-0-2-{clustername}-rpmdeplint"
     display-name: 'Tendrl-2: rpmdeplint'
     description: 'Do not edit this job through the web!'
     scm:
-        - git:
-            url: 'https://github.com/Tendrl/usmqe-tests.git'
-            branches:
-                - "*/master"
-            basedir: usmqe-tests
-            skip-tag: true
-            wipe-workspace: true
+      - git:
+          url: 'https://github.com/Tendrl/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
     project-type: freestyle
     defaults: global
     parameters:
-        - string:
-            name: USM_REPO
-            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
-            description: "USM Repo URL"
-        - string:
-            name: USM_REPO_GPGKEY
-            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
-            description: "USM Repo URL"
+      - string:
+          name: USM_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+          description: "USM Repo URL"
 
     disabled: false
     triggers:
@@ -204,90 +208,92 @@
     block-downstream: true
     block-upstream: true
     wrappers:
-        - ansicolor:
-            colormap: "xterm"
+      - ansicolor:
+          colormap: "xterm"
     node: '{node}'
     builders:
-        - shell: |
-            #!/bin/bash -x
-            #cd usmqe-tests
-            ## prepare hosts file
-            qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
-            scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
-            # prepare required variables
-            echo "" > usm.ini
-            echo "[usmqepytest]" >> usm.ini
-            echo "usm_log_level = DEBUG" >> usm.ini
-            echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
-            echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
-            scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
-            test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmdeplint";
-            # prepare env
-            ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-              scl enable rh-python35 'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
-              source /opt/rh/rh-python35/enable ; \
-              export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
-              env ; \
-              cd /home/usmqe/usmqe-tests/; \
-              cat conf/usm.hosts ; \
-              cat conf/usm.ini ; \
-              echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-              py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
-            pwd
-            echo "qe_server=${{qe_server}}"
-            echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
-            scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
-            sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
-        - shell: |
-            #!/bin/bash -x
-            #cat ${{HOME}}/{clustername}.hosts
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+          scp ${{HOME}}/{clustername}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          # prepare required variables
+          echo "" > usm.ini
+          echo "[usmqepytest]" >> usm.ini
+          echo "usm_log_level = DEBUG" >> usm.ini
+          echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
+          echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmdeplint";
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            scl enable rh-python35 \
+              'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
+            source /opt/rh/rh-python35/enable ; \
+            export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+          pwd
+          echo "qe_server=${{qe_server}}"
+          echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+      - shell: |
+          #!/bin/bash -x
+          #cat ${{HOME}}/{clustername}.hosts
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-0-3-{clustername}-repoclosure'
-          current-parameters: true
-          node-parameters: true
-          condition: ALWAYS
+          - project: 'tendrl-0-3-{clustername}-repoclosure'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
 
       - xunit:
           thresholdmode: 'number'
           thresholds:
-              - failed:
-                    unstable: 0
-                    unstablenew: 0
-                    failure: 0
-                    failurenew: 0
-              - skipped:
-                    unstable: 0
-                    unstablenew: 0
-                    failure: 0
-                    failurenew: 0
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
           types:
-              - junit:
-                  pattern: "logs/result.xml"
+            - junit:
+                pattern: "logs/result.xml"
 
 - job-template:
     name: "tendrl-0-3-{clustername}-repoclosure"
     display-name: 'Tendrl-3: repoclosure'
     description: 'Do not edit this job through the web!'
     scm:
-        - git:
-            url: 'https://github.com/Tendrl/usmqe-tests.git'
-            branches:
-                - "*/master"
-            basedir: usmqe-tests
-            skip-tag: true
-            wipe-workspace: true
+      - git:
+          url: 'https://github.com/Tendrl/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
     project-type: freestyle
     defaults: global
     parameters:
-        - string:
-            name: USM_REPO
-            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
-            description: "USM Repo URL"
-        - string:
-            name: USM_REPO_GPGKEY
-            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
-            description: "USM Repo URL"
+      - string:
+          name: USM_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+          description: "USM Repo URL"
 
     disabled: false
     triggers:
@@ -297,91 +303,92 @@
     block-downstream: true
     block-upstream: true
     wrappers:
-        - ansicolor:
-            colormap: "xterm"
+      - ansicolor:
+          colormap: "xterm"
     node: '{node}'
     builders:
-        - shell: |
-            #!/bin/bash -x
-            #cd usmqe-tests
-            ## prepare hosts file
-            qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
-            scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
-            # prepare required variables
-            echo "" > usm.ini
-            echo "[usmqepytest]" >> usm.ini
-            echo "usm_log_level = DEBUG" >> usm.ini
-            echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
-            echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
-            scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
-            test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repoclosure";
-            # prepare env
-            ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-              scl enable rh-python35 'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
-              source /opt/rh/rh-python35/enable ; \
-              export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
-              env ; \
-              cd /home/usmqe/usmqe-tests/; \
-              cat conf/usm.hosts ; \
-              cat conf/usm.ini ; \
-              echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-              py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
-            pwd
-            echo "qe_server=${{qe_server}}"
-            echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
-            scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
-            sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
-        - shell: |
-            #!/bin/bash -x
-            #cat ${{HOME}}/{clustername}.hosts
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+          scp ${{HOME}}/{clustername}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          # prepare required variables
+          echo "" > usm.ini
+          echo "[usmqepytest]" >> usm.ini
+          echo "usm_log_level = DEBUG" >> usm.ini
+          echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
+          echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repoclosure";
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            scl enable rh-python35 \
+              'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
+            source /opt/rh/rh-python35/enable ; \
+            export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+          pwd
+          echo "qe_server=${{qe_server}}"
+          echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+      - shell: |
+          #!/bin/bash -x
+          #cat ${{HOME}}/{clustername}.hosts
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-0-4-{clustername}-test-install'
-          current-parameters: true
-          node-parameters: true
-          condition: ALWAYS
+          - project: 'tendrl-0-4-{clustername}-test-install'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
 
       - xunit:
           thresholdmode: 'number'
           thresholds:
-              - failed:
-                    unstable: 0
-                    unstablenew: 0
-                    failure: 0
-                    failurenew: 0
-              - skipped:
-                    unstable: 0
-                    unstablenew: 0
-                    failure: 0
-                    failurenew: 0
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
           types:
-              - junit:
-                  pattern: "logs/result.xml"
+            - junit:
+                pattern: "logs/result.xml"
 
 - job-template:
     name: "tendrl-0-4-{clustername}-test-install"
     display-name: 'Tendrl-4: Package Installation'
     description: 'Do not edit this job through the web!'
     scm:
-        - git:
-            url: 'https://github.com/Tendrl/usmqe-tests.git'
-            branches:
-                - "*/master"
-            basedir: usmqe-tests
-            skip-tag: true
-            wipe-workspace: true
+      - git:
+          url: 'https://github.com/Tendrl/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
     project-type: freestyle
     defaults: global
     parameters:
-        - string:
-            name: USM_REPO
-            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
-            description: "USM Repo URL"
-        - string:
-            name: USM_REPO_GPGKEY
-            default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
-            description: "USM Repo URL"
-
+      - string:
+          name: USM_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+          description: "USM Repo URL"
     disabled: false
     triggers:
       - timed: ''
@@ -390,66 +397,65 @@
     block-downstream: true
     block-upstream: true
     wrappers:
-        - ansicolor:
-            colormap: "xterm"
+      - ansicolor:
+          colormap: "xterm"
     node: '{node}'
     builders:
-        - shell: |
-            #!/bin/bash -x
-            #cd usmqe-tests
-            ## prepare hosts file
-            qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
-            scp ${{HOME}}/{clustername}.hosts usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
-            # prepare required variables
-            echo "" > usm.ini
-            echo "[usmqepytest]" >> usm.ini
-            echo "usm_log_level = DEBUG" >> usm.ini
-            echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
-            echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
-            scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
-            test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_install.py";
-            # prepare env
-            ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-              scl enable rh-python35 'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
-              source /opt/rh/rh-python35/enable ; \
-              export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
-              env ; \
-              cd /home/usmqe/usmqe-tests/; \
-              cat conf/usm.hosts ; \
-              cat conf/usm.ini ; \
-              echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-              py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
-            pwd
-            echo "qe_server=${{qe_server}}"
-            echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
-            scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
-            sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
-        - shell: |
-            #!/bin/bash -x
-            #cat ${{HOME}}/{clustername}.hosts
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+          scp ${{HOME}}/{clustername}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          # prepare required variables
+          echo "" > usm.ini
+          echo "[usmqepytest]" >> usm.ini
+          echo "usm_log_level = DEBUG" >> usm.ini
+          echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
+          echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_install.py";
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            scl enable rh-python35 \
+              'pip install --user -r /home/usmqe/usmqe-tests/requirements.txt' ; \
+            source /opt/rh/rh-python35/enable ; \
+            export X_SCLS=\$(scl enable rh-python35 'echo $X_SCLS') ; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+          pwd
+          echo "qe_server=${{qe_server}}"
+          echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
     publishers:
       - trigger-parameterized-builds:
-        - project: 'tendrl-0-X-{clustername}-teardown'
-          current-parameters: true
-          node-parameters: true
-          condition: ALWAYS
+          - project: 'tendrl-0-X-{clustername}-teardown'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
 
       - xunit:
           thresholdmode: 'number'
           thresholds:
-              - failed:
-                    unstable: 0
-                    unstablenew: 0
-                    failure: 0
-                    failurenew: 0
-              - skipped:
-                    unstable: 0
-                    unstablenew: 0
-                    failure: 0
-                    failurenew: 0
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
           types:
-              - junit:
-                  pattern: "logs/result.xml"
+            - junit:
+                pattern: "logs/result.xml"
 
 
 - job-template:
@@ -470,56 +476,59 @@
           use-build-blocker: true
           blocking-jobs:
             - "tendrl.*"
-    
     scm:
-        - git:
-            url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
-            branches:
-                - "*/master"
-            basedir: usmqe-centos-ci
-            skip-tag: true
-            wipe-workspace: true
+      - git:
+          url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-centos-ci
+          skip-tag: true
+          wipe-workspace: true
 
     wrappers:
-        - ansicolor:
-            colormap: "xterm"
-        - timeout:
-            timeout: '{timeout}'
-            abort: true
-            type: absolute
+      - ansicolor:
+          colormap: "xterm"
+      - timeout:
+          timeout: '{timeout}'
+          abort: true
+          type: absolute
     node: '{node}'
     builders:
-        - shell: |
-            #!/bin/bash -xe
-            # Return machines to CentOS CI pool
-            env
-            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
-            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
-            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
-            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/centos-teardown.yml
-        - shell: |
-            #!/bin/bash -x
-            # Make sure that all machines return to pool
-            cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
-            ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
-            CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
-            ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv -e clustername={clustername} -M ${{CICO_DIR}} ${{ANSIBLE_DIR}}/centos-inventory.yml
-            if [ "$?" == "0" ]; then 
-              echo "There are still machine for cluster {clustername} which should be returned to pool."
-              exit 1;
-            else
-              exit 0;
-            fi
+      - shell: |
+          #!/bin/bash -xe
+          # Return machines to CentOS CI pool
+          env
+          cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+          ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+          CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+          ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv \
+            -e clustername={clustername} -M ${{CICO_DIR}} \
+            ${{ANSIBLE_DIR}}/centos-teardown.yml
+      - shell: |
+          #!/bin/bash -x
+          # Make sure that all machines return to pool
+          cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+          ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+          CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+          ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv \
+            -e clustername={clustername} -M ${{CICO_DIR}} \
+            ${{ANSIBLE_DIR}}/centos-inventory.yml
+          if [ "$?" == "0" ]; then
+            echo "There are still machine for cluster {clustername} which should be returned to pool."
+            exit 1;
+          else
+            exit 0;
+          fi
 
 - job-group:
     name: 'tendrl-package-validation-jobs'
     jobs:
-    - 'tendrl-0-0-{clustername}-prepare'
-    - 'tendrl-0-1-{clustername}-rpmlint'
-    - 'tendrl-0-2-{clustername}-rpmdeplint'
-    - 'tendrl-0-3-{clustername}-repoclosure'
-    - 'tendrl-0-4-{clustername}-test-install'
-    - 'tendrl-0-X-{clustername}-teardown'
+      - 'tendrl-0-0-{clustername}-prepare'
+      - 'tendrl-0-1-{clustername}-rpmlint'
+      - 'tendrl-0-2-{clustername}-rpmdeplint'
+      - 'tendrl-0-3-{clustername}-repoclosure'
+      - 'tendrl-0-4-{clustername}-test-install'
+      - 'tendrl-0-X-{clustername}-teardown'
 
 - project:
     name: "tendrl-package-validation-project"

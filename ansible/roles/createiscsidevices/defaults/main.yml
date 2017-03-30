@@ -2,4 +2,4 @@
 # number of created devices
 devices_count: 5
 # size of each created device
-device_size: "5GB"
+device_size: "50GB"

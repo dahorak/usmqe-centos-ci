@@ -112,7 +112,7 @@
           #cat ${{HOME}}/cluster-{clustername}.hosts
 
       - shell: |
-          #!/bin/bash -x
+          #!/bin/bash -xe
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
             usmqe@${{qe_server}}:/home/usmqe/cluster-{clustername}.hosts
@@ -120,6 +120,8 @@
             ANSIBLE_FORCE_COLOR=true \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             /home/usmqe/usmqe-setup/ci_default.yml"
+          scp usmqe@${{qe_server}}:/home/usmqe/usmqe-setup/usm.ini ${{HOME}}/cluster-{clustername}.ini
+
 
       - shell: |
           #!/bin/bash -x
@@ -184,23 +186,9 @@
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
             usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          scp ${{HOME}}/cluster-{clustername}.ini \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           # prepare required variables
-          usm_server=$(grep -A1 '\[usm_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
-          # prepare configuration file
-          echo "" > usm.ini
-          echo "[usmqepytest]" >> usm.ini
-          echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_username = admin" >> usm.ini
-          echo "usm_password = admin" >> usm.ini
-          echo "usm_web_url = https://${{usm_server}}" >> usm.ini
-          echo "usm_api_url = http://${{usm_server}}:9292/1.0/" >> usm.ini
-          echo "etcd_api_url = http://${{usm_server}}:2379/v2/" >> usm.ini
-          echo "usm_ca_cert = " >> usm.ini
-          echo "usm_brick_path = /bricks/b1/data" >> usm.ini
-          echo "usm_gluster_role = gluster" >> usm.ini
-          echo "usm_volume_name = TestVolume" >> usm.ini
-          echo "usm_gluster_version = 3.8.3" >> usm.ini
-          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           tests=""
           for test in ${{TEST_LIST//[_,]/ }}; do
             tests="${{tests}} usmqe_tests/api/tendrl/${{test}}";

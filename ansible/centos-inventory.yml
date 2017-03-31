@@ -3,7 +3,7 @@
   connection: local
   vars:
     - ssid: "{{ lookup('csvfile', '{} file={} delimiter=,'.format(clustername, home_dir + clustername + '.ssid')) }}"
-  pre_tasks: 
+  pre_tasks:
     - cico:
         action=list
         api_key={{ api_key }}
@@ -13,10 +13,26 @@
     - debug: msg="Host {{ item.key }} is {{ item.value.architecture }}"
       with_dict: "{{ data.results.hosts }}"
 
-  roles: 
+    # all available hosts
+    - name: Add hosts to group 'all'
+      add_host:
+        name="{{ item }}"
+        groups="all"
+      with_items: "{{ data.results.hosts.keys() }}"
+      when: "data.results.hosts|count != 0"
+
+  roles:
     - role: saveinventory
       tendrlhosts: "{{ data.results.hosts.keys() }}"
       clustername: clustername
+      when: "data.results.hosts|count != 0"
     - role: savessids
       tendrlhosts: "{{ data.results.hosts }}"
       clustername: clustername
+      when: "data.results.hosts|count != 0"
+
+  tasks:
+    - shell: "echo RETURNED > {{ home_dir + clustername }}.hosts"
+      when: "data.results.hosts|count == 0"
+    - shell: "echo RETURNED > {{ home_dir + clustername }}.ssid"
+      when: "data.results.hosts|count == 0"

@@ -501,7 +501,7 @@
           ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv \
             -e clustername={clustername} -M ${{CICO_DIR}} \
             ${{ANSIBLE_DIR}}/centos-inventory.yml
-          if grep -q RETURNED {{HOME}}/{clustername}.hosts; then
+          if grep -q RETURNED ${{HOME}}/{clustername}.hosts; then
             exit 0;
           else
             echo "There are still machine for cluster {clustername} which should be returned to pool."

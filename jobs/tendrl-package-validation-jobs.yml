@@ -66,7 +66,13 @@
           ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
             ${{WORKSPACE}}/usmqe-setup/qe_server_sshkey.yml
           #cat ${{HOME}}/{clustername}.hosts
-
+      - shell: |
+          #!/bin/bash -x
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+          ssh usmqe@${{qe_server}} "mkdir /home/usmqe/repos"
+          ssh usmqe@${{qe_server}} "wget https://copr.fedorainfracloud.org/coprs/tendrl/tendrl/repo/epel-7/tendrl-tendrl-epel-7.repo -O /home/usmqe/repos/tendrl.repo"
+          ssh usmqe@${{qe_server}} "reposync --config=/home/usmqe/repos/tendrl.repo --norepopath -r tendrl-tendrl -d -n -p /home/usmqe/repos/tendrl"
+          ssh usmqe@${{qe_server}} "createrepo /home/usmqe/repos/tendrl"
 
     publishers:
       - trigger-parameterized-builds:
@@ -463,10 +469,17 @@
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
     publishers:
       - trigger-parameterized-builds:
+          - project: 'tendrl-0-9-{clustername}-create-repo'
+            current-parameters: true
+            node-parameters: true
+            condition: SUCCESS
+
+      - trigger-parameterized-builds:
           - project: 'tendrl-0-X-{clustername}-teardown'
             current-parameters: true
             node-parameters: true
-            condition: ALWAYS
+            condition: FAILED
+
 
       - xunit:
           thresholdmode: 'number'
@@ -485,6 +498,42 @@
             - junit:
                 pattern: "logs/result.xml"
 
+
+- job-template:
+    name: "tendrl-0-9-{clustername}-create-repo"
+    display-name: 'Tendrl-9: Create Validated Repo'
+    description: 'Do not edit this job through the web!'
+    project-type: freestyle
+    defaults: global
+    disabled: false
+    triggers:
+      - timed: ''
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+    node: '{node}'
+    builders:
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+          ssh usmqe@${{qe_server}} "ls /home/usmqe/repos/tendrl/"
+          set +x
+          key=$(cat ~/duffy.key)
+          ssh usmqe@${{qe_server}} "RSYNC_PASSWORD=${{key:0:13}} rsync -av --delete /home/usmqe/repos/tendrl tendrl@artifacts.ci.centos.org::tendrl/nightly-validated/"
+          set +x
+
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-0-X-{clustername}-teardown'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
 
 - job-template:
     name: "tendrl-0-X-{clustername}-teardown"
@@ -556,6 +605,7 @@
       - 'tendrl-0-2-{clustername}-rpmdeplint'
       - 'tendrl-0-3-{clustername}-repoclosure'
       - 'tendrl-0-4-{clustername}-test-install'
+      - 'tendrl-0-9-{clustername}-create-repo'
       - 'tendrl-0-X-{clustername}-teardown'
 
 - project:

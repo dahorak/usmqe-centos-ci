@@ -98,12 +98,20 @@
     defaults: global
     parameters:
       - string:
-          name: USM_REPO
+          name: USM_CORE_REPO
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
           description: "USM Repo URL"
       - string:
-          name: USM_REPO_GPGKEY
+          name: USM_CORE_REPO_GPGKEY
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
           description: "USM Repo URL"
     disabled: false
     triggers:
@@ -128,8 +136,10 @@
           echo "" > usm.ini
           echo "[usmqepytest]" >> usm.ini
           echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
-          echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmlint";
           # prepare env
@@ -189,12 +199,20 @@
     defaults: global
     parameters:
       - string:
-          name: USM_REPO
+          name: USM_CORE_REPO
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
           description: "USM Repo URL"
       - string:
-          name: USM_REPO_GPGKEY
+          name: USM_CORE_REPO_GPGKEY
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
           description: "USM Repo URL"
 
     disabled: false
@@ -220,8 +238,10 @@
           echo "" > usm.ini
           echo "[usmqepytest]" >> usm.ini
           echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
-          echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmdeplint";
           # prepare env
@@ -281,12 +301,20 @@
     defaults: global
     parameters:
       - string:
-          name: USM_REPO
+          name: USM_CORE_REPO
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
           description: "USM Repo URL"
       - string:
-          name: USM_REPO_GPGKEY
+          name: USM_CORE_REPO_GPGKEY
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
           description: "USM Repo URL"
 
     disabled: false
@@ -312,8 +340,10 @@
           echo "" > usm.ini
           echo "[usmqepytest]" >> usm.ini
           echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
-          echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repoclosure";
           # prepare env
@@ -373,12 +403,20 @@
     defaults: global
     parameters:
       - string:
-          name: USM_REPO
+          name: USM_CORE_REPO
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
           description: "USM Repo URL"
       - string:
-          name: USM_REPO_GPGKEY
+          name: USM_CORE_REPO_GPGKEY
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
           description: "USM Repo URL"
     disabled: false
     triggers:
@@ -403,8 +441,10 @@
           echo "" > usm.ini
           echo "[usmqepytest]" >> usm.ini
           echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_rpm_baseurl = ${{USM_REPO}}" >> usm.ini
-          echo "usm_rpm_gpgkey_url = ${{USM_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_install.py";
           # prepare env

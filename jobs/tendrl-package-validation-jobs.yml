@@ -243,7 +243,7 @@
           echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
           echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
-          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmdeplint";
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmdeplint /home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repo_packagelist";
           # prepare env
           ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
             pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \

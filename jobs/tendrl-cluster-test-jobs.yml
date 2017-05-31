@@ -119,7 +119,7 @@
           ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
             ANSIBLE_FORCE_COLOR=true \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
-            /home/usmqe/usmqe-setup/ci_default.yml"
+            /home/usmqe/usmqe-setup/ci_default_import.yml"
           scp usmqe@${{qe_server}}:/home/usmqe/usmqe-setup/usm.ini ${{HOME}}/cluster-{clustername}.ini
 
 

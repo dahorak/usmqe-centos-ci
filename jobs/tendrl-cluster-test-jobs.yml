@@ -165,7 +165,7 @@
     parameters:
       - string:
           name: TEST_LIST
-          default: others,gluster
+          default: others,{clustername}
           description: "List of tests to execute (and any additional parameter for py.test)."
     disabled: false
     triggers:
@@ -191,7 +191,7 @@
           # prepare required variables
           tests=""
           for test in ${{TEST_LIST//[_,]/ }}; do
-            tests="${{tests}} usmqe_tests/api/tendrl/${{test}}";
+            tests="${{tests}} usmqe_tests/api/${{test}}";
           done
           # prepare env
           ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \

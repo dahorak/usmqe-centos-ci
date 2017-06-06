@@ -2,7 +2,12 @@
 - job-template:
     name: "tendrl-0-0-{clustername}-prepare"
     display-name: 'Tendrl-0-0-{clustername} prepare environment'
-    description: 'Do not edit this job through the web! Deploy machines for testing.'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     project-type: freestyle
     defaults: global
     scm:
@@ -85,7 +90,12 @@
 - job-template:
     name: "tendrl-0-1-{clustername}-rpmlint"
     display-name: 'Tendrl-1: rpmlint'
-    description: 'Do not edit this job through the web!'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
           url: 'https://github.com/Tendrl/usmqe-tests.git'
@@ -186,7 +196,12 @@
 - job-template:
     name: "tendrl-0-2-{clustername}-rpmdeplint"
     display-name: 'Tendrl-2: rpmdeplint'
-    description: 'Do not edit this job through the web!'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
           url: 'https://github.com/Tendrl/usmqe-tests.git'
@@ -288,7 +303,12 @@
 - job-template:
     name: "tendrl-0-3-{clustername}-repoclosure"
     display-name: 'Tendrl-3: repoclosure'
-    description: 'Do not edit this job through the web!'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
           url: 'https://github.com/Tendrl/usmqe-tests.git'
@@ -390,7 +410,12 @@
 - job-template:
     name: "tendrl-0-4-{clustername}-test-install"
     display-name: 'Tendrl-4: Package Installation'
-    description: 'Do not edit this job through the web!'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
           url: 'https://github.com/Tendrl/usmqe-tests.git'
@@ -489,7 +514,12 @@
 - job-template:
     name: "tendrl-0-X-{clustername}-teardown"
     display-name: 'Tendrl-0-X-{clustername} Teardown'
-    description: 'Do not edit this job through the web! Return machines back to pool.'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     project-type: freestyle
     defaults: global
     disabled: "{obj:disabled}"

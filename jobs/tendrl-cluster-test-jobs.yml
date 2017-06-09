@@ -5,6 +5,24 @@
     description: 'Deploy machines for testing.'
     project-type: freestyle
     defaults: global
+    parameters:
+      - string:
+          name: TENDRL_REPO_URL
+          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/release/epel-7-x86_64/"
+          description: "Tendrl main repo URL."
+      - string:
+          name: TENDRL_REPO_GPGKEY_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/release/pubkey.gpg"
+          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
+      - string:
+          name: TENDRL_DEPENDENCIES_REPO_URL
+          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "Tendrl dependencies repo URL."
+      - string:
+          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
+
     scm:
       - git:
           url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
@@ -37,6 +55,10 @@
       - shell: |
           #!/bin/bash -xe
           # Get machines from CentOS CI pool
+          echo "TENDRL_REPO_URL=${{TENDRL_REPO_URL}}"
+          echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}"
+          echo "TENDRL_DEPENDENCIES_REPO_URL=${{TENDRL_DEPENDENCIES_REPO_URL}}"
+          echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}"
           env
           cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
           ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
@@ -85,6 +107,24 @@
           wipe-workspace: true
     project-type: freestyle
     defaults: global
+    parameters:
+      - string:
+          name: TENDRL_REPO_URL
+          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/release/epel-7-x86_64/"
+          description: "Tendrl main repo URL."
+      - string:
+          name: TENDRL_REPO_GPGKEY_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/release/pubkey.gpg"
+          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
+      - string:
+          name: TENDRL_DEPENDENCIES_REPO_URL
+          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "Tendrl dependencies repo URL."
+      - string:
+          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
+
     disabled: false
     triggers:
       - timed: ''
@@ -113,13 +153,21 @@
 
       - shell: |
           #!/bin/bash -xe
+          echo "TENDRL_REPO_URL=${{TENDRL_REPO_URL}}"
+          echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}"
+          echo "TENDRL_DEPENDENCIES_REPO_URL=${{TENDRL_DEPENDENCIES_REPO_URL}}"
+          echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}"
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
             usmqe@${{qe_server}}:/home/usmqe/cluster-{clustername}.hosts
           ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
             ANSIBLE_FORCE_COLOR=true \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
-            /home/usmqe/usmqe-setup/ci_default_import.yml"
+            /home/usmqe/usmqe-setup/ci_default_import.yml \
+            -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \
+            tendrl_repo_gpgkey_url=${{TENDRL_REPO_GPGKEY_URL}} \
+            tendrl_dependencies_repo_url=${{TENDRL_DEPENDENCIES_REPO_URL}} \
+            tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}'"
           scp usmqe@${{qe_server}}:/home/usmqe/usmqe-setup/usm.ini ${{HOME}}/cluster-{clustername}.ini
 
 

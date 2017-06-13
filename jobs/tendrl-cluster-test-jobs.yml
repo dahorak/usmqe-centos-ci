@@ -228,7 +228,7 @@
     parameters:
       - string:
           name: TEST_LIST
-          default: others,{clustername}
+          default: "{clustername}"
           description: "List of tests to execute (and any additional parameter for py.test)."
     disabled: false
     triggers:
@@ -254,6 +254,89 @@
           # prepare required variables
           tests=""
           for test in ${{TEST_LIST//[_,]/ }}; do
+            tests="${{tests}} usmqe_tests/api/${{test}}";
+          done
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            py.test --junit-xml=logs/result.xml -vvvrx ${{tests}}"
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+
+      - shell: |
+          #!/bin/bash -x
+          #cat ${{HOME}}/cluster-{clustername}.hosts
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-2-3-cluster-{clustername}-test-api-others'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
+      - xunit:
+          thresholdmode: 'number'
+          thresholds:
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+          types:
+            - junit:
+                pattern: "logs/result.xml"
+
+
+- job-template:
+    name: "tendrl-2-3-cluster-{clustername}-test-api-others"
+    display-name: 'Tendrl-7: cluster-{clustername} Test API others'
+    description: 'Do not edit this job through the web!'
+    scm:
+      - git:
+          url: 'https://github.com/Tendrl/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
+    project-type: freestyle
+    defaults: global
+    parameters:
+      - string:
+          name: TEST_LIST_OTHERS
+          default: others
+          description: "List of tests to execute (and any additional parameter for py.test)."
+    disabled: false
+    triggers:
+      - timed: ''
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+    node: '{node}'
+    builders:
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
+          scp ${{HOME}}/cluster-{clustername}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          scp ${{HOME}}/cluster-{clustername}.ini \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          # prepare required variables
+          tests=""
+          for test in ${{TEST_LIST_OTHERS//[_,]/ }}; do
             tests="${{tests}} usmqe_tests/api/${{test}}";
           done
           # prepare env
@@ -368,6 +451,7 @@
       - 'tendrl-2-0-cluster-{clustername}-create'
       - 'tendrl-2-1-cluster-{clustername}-install'
       - 'tendrl-2-2-cluster-{clustername}-test-api'
+      - 'tendrl-2-3-cluster-{clustername}-test-api-others'
       - 'tendrl-2-X-cluster-{clustername}-teardown'
 
 - project:

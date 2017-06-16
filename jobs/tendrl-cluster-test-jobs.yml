@@ -287,8 +287,8 @@
             - skipped:
                 unstable: 0
                 unstablenew: 0
-                failure: 0
-                failurenew: 0
+                failure: 100
+                failurenew: 100
           types:
             - junit:
                 pattern: "logs/result.xml"
@@ -370,8 +370,8 @@
             - skipped:
                 unstable: 0
                 unstablenew: 0
-                failure: 0
-                failurenew: 0
+                failure: 100
+                failurenew: 100
           types:
             - junit:
                 pattern: "logs/result.xml"

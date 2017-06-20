@@ -2,7 +2,12 @@
 - job-template:
     name: "tendrl-2-0-cluster-{clustername}-create"
     display-name: 'Tendrl2-0 - cluster-{clustername} Cluster create'
-    description: 'Deploy machines for testing.'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     project-type: freestyle
     defaults: global
     parameters:
@@ -89,7 +94,12 @@
 - job-template:
     name: "tendrl-2-1-cluster-{clustername}-install"
     display-name: 'Tendrl-5: cluster-{clustername} Cluster install'
-    description: 'Do not edit this job through the web!'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
           url: 'https://github.com/dahorak/ansible-gluster.git'
@@ -199,7 +209,12 @@
 - job-template:
     name: "tendrl-2-2-cluster-{clustername}-test-api"
     display-name: 'Tendrl-6: cluster-{clustername} Test API'
-    description: 'Do not edit this job through the web!'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
           url: 'https://github.com/Tendrl/usmqe-tests.git'
@@ -282,7 +297,12 @@
 - job-template:
     name: "tendrl-2-X-cluster-{clustername}-teardown"
     display-name: 'Tendrl2-X - cluster-{clustername} Cluster teardown'
-    description: 'Do not edit this job through the web! Return machines back to pool.'
+    description: |
+        Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        Managed by Jenkins Job Builder. Do not edit via web.<br>
     project-type: freestyle
     defaults: global
     disabled: "{obj:disabled}"

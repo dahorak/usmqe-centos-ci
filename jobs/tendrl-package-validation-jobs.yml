@@ -10,6 +10,23 @@
         Managed by Jenkins Job Builder. Do not edit via web.<br>
     project-type: freestyle
     defaults: global
+    parameters:
+      - string:
+          name: TENDRL_REPO_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/release/epel-7-x86_64/"
+          description: "Tendrl main repo URL."
+      - string:
+          name: TENDRL_REPO_GPGKEY_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/release/pubkey.gpg"
+          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
+      - string:
+          name: TENDRL_DEPENDENCIES_REPO_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "Tendrl dependencies repo URL."
+      - string:
+          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
     scm:
       - git:
           url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
@@ -71,13 +88,28 @@
           ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
             ${{WORKSPACE}}/usmqe-setup/qe_server_sshkey.yml
           #cat ${{HOME}}/{clustername}.hosts
+      - shell: |
+          #!/bin/bash -x
+          # clone required repos
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/{clustername}.hosts | tail -1)
+          ssh usmqe@${{qe_server}} "mkdir /home/usmqe/repos"
+          ssh usmqe@${{qe_server}} "echo -e '[tendrl]\nname=tendrl\nbaseurl=${{TENDRL_REPO_URL}}\n' > /home/usmqe/repos/tendrl.repo"
+          ssh usmqe@${{qe_server}} "echo -e '[tendrl-dependencies]\nname=tendrl-dependencies\nbaseurl=${{TENDRL_DEPENDENCIES_REPO_URL}}\n' >> /home/usmqe/repos/tendrl.repo"
+          ssh usmqe@${{qe_server}} "reposync --config=/home/usmqe/repos/tendrl.repo -r tendrl -r tendrl-dependencies -d -n -p /home/usmqe/repos/"
+          ssh usmqe@${{qe_server}} "createrepo /home/usmqe/repos/tendrl"
+          ssh usmqe@${{qe_server}} "createrepo /home/usmqe/repos/tendrl-dependencies"
 
+          echo "TENDRL_REPO_URL=file:///home/usmqe/repos/tendrl" > ${{WORKSPACE}}/env.sh
+          echo "TENDRL_DEPENDENCIES_REPO_URL=file:///home/usmqe/repos/tendrl-dependencies" >> ${{WORKSPACE}}/env.sh
+          echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}" >> ${{WORKSPACE}}/env.sh
+          echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}" >> ${{WORKSPACE}}/env.sh
 
     publishers:
       - trigger-parameterized-builds:
           - project: 'tendrl-0-1-{clustername}-rpmlint'
-            current-parameters: true
+            #current-parameters: true
             node-parameters: true
+            property-file: env.sh
             condition: SUCCESS
 
       - trigger-parameterized-builds:
@@ -108,21 +140,21 @@
     defaults: global
     parameters:
       - string:
-          name: USM_CORE_REPO
+          name: TENDRL_REPO_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
-          description: "USM Repo URL"
+          description: "Tendrl main repo URL"
       - string:
-          name: USM_CORE_REPO_GPGKEY
+          name: TENDRL_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
-          description: "USM Repo URL"
+          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
       - string:
-          name: USM_DEPS_REPO
+          name: TENDRL_DEPENDENCIES_REPO_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
-          description: "USM Repo URL"
+          description: "Tendrl dependencies repo URL."
       - string:
-          name: USM_DEPS_REPO_GPGKEY
+          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
-          description: "USM Repo URL"
+          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
     disabled: false
     triggers:
       - timed: ''
@@ -146,10 +178,10 @@
           echo "" > usm.ini
           echo "[usmqepytest]" >> usm.ini
           echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
-          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
-          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
-          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_core_baseurl = ${{TENDRL_REPO_URL}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{TENDRL_REPO_GPGKEY_URL}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{TENDRL_DEPENDENCIES_REPO_URL}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmlint";
           # prepare env
@@ -214,21 +246,21 @@
     defaults: global
     parameters:
       - string:
-          name: USM_CORE_REPO
+          name: TENDRL_REPO_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
-          description: "USM Repo URL"
+          description: "Tendrl main repo URL"
       - string:
-          name: USM_CORE_REPO_GPGKEY
+          name: TENDRL_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
-          description: "USM Repo URL"
+          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
       - string:
-          name: USM_DEPS_REPO
+          name: TENDRL_DEPENDENCIES_REPO_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
-          description: "USM Repo URL"
+          description: "Tendrl dependencies repo URL."
       - string:
-          name: USM_DEPS_REPO_GPGKEY
+          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
-          description: "USM Repo URL"
+          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
 
     disabled: false
     triggers:
@@ -253,10 +285,10 @@
           echo "" > usm.ini
           echo "[usmqepytest]" >> usm.ini
           echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
-          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
-          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
-          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_core_baseurl = ${{TENDRL_REPO_URL}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{TENDRL_REPO_GPGKEY_URL}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{TENDRL_DEPENDENCIES_REPO_URL}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmdeplint /home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repo_packagelist";
           # prepare env
@@ -321,21 +353,21 @@
     defaults: global
     parameters:
       - string:
-          name: USM_CORE_REPO
+          name: TENDRL_REPO_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
-          description: "USM Repo URL"
+          description: "Tendrl main repo URL"
       - string:
-          name: USM_CORE_REPO_GPGKEY
+          name: TENDRL_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
-          description: "USM Repo URL"
+          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
       - string:
-          name: USM_DEPS_REPO
+          name: TENDRL_DEPENDENCIES_REPO_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
-          description: "USM Repo URL"
+          description: "Tendrl dependencies repo URL."
       - string:
-          name: USM_DEPS_REPO_GPGKEY
+          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
-          description: "USM Repo URL"
+          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
 
     disabled: false
     triggers:
@@ -360,10 +392,10 @@
           echo "" > usm.ini
           echo "[usmqepytest]" >> usm.ini
           echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
-          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
-          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
-          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_core_baseurl = ${{TENDRL_REPO_URL}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{TENDRL_REPO_GPGKEY_URL}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{TENDRL_DEPENDENCIES_REPO_URL}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repoclosure";
           # prepare env
@@ -428,21 +460,21 @@
     defaults: global
     parameters:
       - string:
-          name: USM_CORE_REPO
+          name: TENDRL_REPO_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/epel-7-x86_64/"
-          description: "USM Repo URL"
+          description: "Tendrl main repo URL"
       - string:
-          name: USM_CORE_REPO_GPGKEY
+          name: TENDRL_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/tendrl/pubkey.gpg"
-          description: "USM Repo URL"
+          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
       - string:
-          name: USM_DEPS_REPO
+          name: TENDRL_DEPENDENCIES_REPO_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
-          description: "USM Repo URL"
+          description: "Tendrl dependencies repo URL."
       - string:
-          name: USM_DEPS_REPO_GPGKEY
+          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
-          description: "USM Repo URL"
+          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
     disabled: false
     triggers:
       - timed: ''
@@ -466,10 +498,10 @@
           echo "" > usm.ini
           echo "[usmqepytest]" >> usm.ini
           echo "usm_log_level = DEBUG" >> usm.ini
-          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
-          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
-          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
-          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_core_baseurl = ${{TENDRL_REPO_URL}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{TENDRL_REPO_GPGKEY_URL}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{TENDRL_DEPENDENCIES_REPO_URL}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}" >> usm.ini
           scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
           test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_install.py";
           # prepare env

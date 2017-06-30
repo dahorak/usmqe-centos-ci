@@ -181,6 +181,7 @@
             usmqe@${{qe_server}}:/home/usmqe/cluster-{clustername}.hosts
           ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
             ANSIBLE_FORCE_COLOR=true \
+            ANSIBLE_ROLES_PATH=/home/usmqe/tendrl-ansible/roles/ \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             /home/usmqe/usmqe-setup/ci_default_import.yml \
             -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \

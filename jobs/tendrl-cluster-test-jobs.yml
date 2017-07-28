@@ -6,7 +6,7 @@
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
-        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
         Managed by Jenkins Job Builder. Do not edit via web.<br>
     project-type: freestyle
     defaults: global
@@ -30,7 +30,7 @@
 
     scm:
       - git:
-          url: 'https://github.com/Tendrl/usmqe-centos-ci.git'
+          url: 'https://github.com/usmqe/usmqe-centos-ci.git'
           branches:
             - "*/master"
           basedir: usmqe-centos-ci
@@ -98,7 +98,7 @@
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
-        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
         Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
@@ -109,7 +109,7 @@
           skip-tag: true
           wipe-workspace: true
       - git:
-          url: 'https://github.com/Tendrl/usmqe-setup.git'
+          url: 'https://github.com/usmqe/usmqe-setup.git'
           branches:
             - "*/master"
           basedir: usmqe-setup
@@ -223,11 +223,11 @@
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
-        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
         Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
-          url: 'https://github.com/Tendrl/usmqe-tests.git'
+          url: 'https://github.com/usmqe/usmqe-tests.git'
           branches:
             - "*/master"
           basedir: usmqe-tests
@@ -310,7 +310,7 @@
     description: 'Do not edit this job through the web!'
     scm:
       - git:
-          url: 'https://github.com/Tendrl/usmqe-tests.git'
+          url: 'https://github.com/usmqe/usmqe-tests.git'
           branches:
             - "*/master"
           basedir: usmqe-tests
@@ -394,7 +394,7 @@
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
-        JJB Code Location: <a href="https://github.com/Tendrl/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+        JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
         Managed by Jenkins Job Builder. Do not edit via web.<br>
     project-type: freestyle
     defaults: global

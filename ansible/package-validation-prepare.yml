@@ -19,6 +19,11 @@
         name="{{ data.results.hosts.keys()[0] }}"
         groups="qe_server"
 
+    - name: Add one host to unittest_node group
+      add_host:
+        name="{{ data.results.hosts.keys()[0] }}"
+        groups="unittest_node"
+
   roles:
     - role: saveinventory
     - role: savessids

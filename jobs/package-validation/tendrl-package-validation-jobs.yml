@@ -524,9 +524,10 @@
     project_name: 'master'
     jobs:
       - 'tendrl-package-validation-jobs'
-    triggers: []
-    copr_user: 'dahorak'
-    target_repo: 'tendrl-test-master'
+    triggers:
+      - timed: 'H 2 * * *'
+    copr_user: 'tendrl'
+    target_repo: 'tendrl'
 
 - project:
     name: 'release'

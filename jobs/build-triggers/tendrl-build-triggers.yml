@@ -112,7 +112,7 @@
     project_name: 'release'
     target_repo: 'tendrl-test-release'
     # '**' in the following branch specification is recognized as wildcard that includes the separator '/'.
-    branch: 'release**'
+    branch: 'release/*'
     build_commands: 'make dist && make srpm'
     copr_config: '~/.copr-dahorak.conf'
     copr_user: 'dahorak'
@@ -124,8 +124,9 @@
     scm:
       - git:
           url: 'https://github.com/Tendrl/{package_name}'
-          branches:
-            - "refs/heads/{branch}"
+          #branches:
+          #  - "refs/heads/{branch}"
+          refspec: "+refs/heads/{branch}:refs/remotes/origin/{branch}"
           basedir: tendrl-{package_name}
           skip-tag: true
           wipe-workspace: true
@@ -153,11 +154,11 @@
 - project:
     name: 'master'
     project_name: 'master'
-    target_repo: 'tendrl-test-master'
+    target_repo: 'tendrl'
     branch: 'master'
     build_commands: 'make snapshot'
-    copr_config: '~/.copr-dahorak.conf'
-    copr_user: 'dahorak'
+    copr_config: '~/.copr-tendrl.conf'
+    copr_user: 'tendrl'
     run_package_validation: true
     triggers:
       - pollscm:

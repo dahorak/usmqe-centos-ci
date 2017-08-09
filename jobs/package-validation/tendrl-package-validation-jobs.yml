@@ -76,6 +76,7 @@
           echo "qe_server=${{qe_server}}"
           echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
       - shell: |
           #!/bin/bash -x
@@ -181,6 +182,7 @@
           echo "qe_server=${{qe_server}}"
           echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
       - shell: |
           #!/bin/bash -x
@@ -286,6 +288,7 @@
           echo "qe_server=${{qe_server}}"
           echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
       - shell: |
           #!/bin/bash -x
@@ -391,6 +394,7 @@
           echo "qe_server=${{qe_server}}"
           echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
     publishers:
       - trigger-parameterized-builds:

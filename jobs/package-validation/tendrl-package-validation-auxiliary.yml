@@ -66,6 +66,14 @@
           ansible-playbook -i ${{HOME}}/pkgval_{project_name}.hosts -vvv \
             ${{WORKSPACE}}/usmqe-setup/qe_server.yml
       - shell: |
+          #!/bin/bash -xe
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
+          ssh root@${{qe_server}} " \
+            echo -e '[grafana]\nname=grafana\nbaseurl=https://packagecloud.io/grafana/stable/el/6/x86_64\nrepo_gpgcheck=1\nenabled=1\ngpgcheck=1\ngpgkey=https://packagecloud.io/gpg.key https://grafanarel.s3.amazonaws.com/RPM-GPG-KEY-grafana\nsslverify=1\nsslcacert=/etc/pki/tls/certs/ca-bundle.crt\n' > /etc/yum.repos.d/grafana.repo"
+          cd usmqe-setup
+          ansible-playbook -i ${{HOME}}/pkgval_{project_name}.hosts -vvv \
+            ${{WORKSPACE}}/usmqe-setup/tendrl_unit_test_setup.yml
+      - shell: |
           #!/bin/bash -x
           ansible-playbook -i ${{HOME}}/pkgval_{project_name}.hosts -vvv \
             ${{WORKSPACE}}/usmqe-setup/qe_server_sshkey.yml

@@ -70,8 +70,8 @@
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
             cat conf/usm.ini ; \
-            echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-            py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+            echo python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
           pwd
           echo "qe_server=${{qe_server}}"
           echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
@@ -176,8 +176,8 @@
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
             cat conf/usm.ini ; \
-            echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-            py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+            echo python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
           pwd
           echo "qe_server=${{qe_server}}"
           echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
@@ -282,8 +282,8 @@
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
             cat conf/usm.ini ; \
-            echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-            py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+            echo python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
           pwd
           echo "qe_server=${{qe_server}}"
           echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
@@ -388,8 +388,8 @@
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
             cat conf/usm.ini ; \
-            echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-            py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+            echo python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
           pwd
           echo "qe_server=${{qe_server}}"
           echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
@@ -431,14 +431,7 @@
       Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
       JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
       Managed by Jenkins Job Builder. Do not edit via web.<br>
-    scm:
-      - git:
-          url: 'https://github.com/usmqe/usmqe-tests.git'
-          branches:
-            - "*/master"
-          basedir: usmqe-tests
-          skip-tag: true
-          wipe-workspace: true
+    scm: []
     project-type: freestyle
     defaults: global
     parameters:
@@ -471,40 +464,25 @@
     builders:
       - shell: |
           #!/bin/bash -x
-          ## ## ## ## ## ## ## ## ## ## ##
-          # RUN UNITTESTS                #
-          # not done yet                 #
-          ## ## ## ## ## ## ## ## ## ## ##
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
+          for module in commons gluster_integration node_agent monitoring_integration; do
+            ssh usmqe@${{qe_server}} " \
+              cd /home/usmqe/; \
+              mkdir /home/usmqe/logs; \
+              echo python2.7 -m pytest --color=yes --junit-xml=/home/usmqe/logs/result-${{module}}.xml -vvvrx \
+                --ignore=/usr/lib/python2.7/site-packages/tendrl/$module/tests/fixme \
+                /usr/lib/python2.7/site-packages/tendrl/${{module}}/tests/; \
+              python2.7 -m pytest --color=yes --junit-xml=/home/usmqe/logs/result-${{module}}.xml -vvvrx \
+                --ignore=/usr/lib/python2.7/site-packages/tendrl/$module/tests/fixme \
+                /usr/lib/python2.7/site-packages/tendrl/${{module}}/tests/";
+          done
 
-          ##cd usmqe-tests
-          ### prepare hosts file
-          #qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
-          #scp ${{HOME}}/pkgval_{project_name}.hosts \
-          #  usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
-          ## prepare required variables
-          #echo "" > usm.ini
-          #echo "[usmqepytest]" >> usm.ini
-          #echo "usm_log_level = DEBUG" >> usm.ini
-          #echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
-          #echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
-          #echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
-          #echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
-          #scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
-          #test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_install.py";
-          ## prepare env
-          #ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
-          #  pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
-          #  env ; \
-          #  cd /home/usmqe/usmqe-tests/; \
-          #  cat conf/usm.hosts ; \
-          #  cat conf/usm.ini ; \
-          #  echo py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
-          #  py.test --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
-          #pwd
-          #echo "qe_server=${{qe_server}}"
-          #echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
-          #scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
-          #sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+          pwd
+          echo "qe_server=${{qe_server}}"
+          rm -f "logs/*"
+          scp -r usmqe@${{qe_server}}:/home/usmqe/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/logs/*"
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result-*.xml
     publishers:
       - trigger-parameterized-builds:
           - project: 'tendrl-pkgval-X-{project_name}-teardown'
@@ -527,7 +505,7 @@
                 failurenew: 0
           types:
             - junit:
-                pattern: "logs/result.xml"
+                pattern: "logs/result-*.xml"
 
 
 - job-group:

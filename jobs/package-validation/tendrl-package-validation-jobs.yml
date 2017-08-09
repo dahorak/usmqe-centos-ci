@@ -1,7 +1,7 @@
 ---
 - job-template:
     name: "tendrl-pkgval-1-{project_name}-rpmlint"
-    display-name: 'Tendrl pkgval: ({project_name}) - rpmlint'
+    display-name: 'Tendrl pkgval: ({project_name}) 1- rpmlint'
     description: |
       <b>Perform rpmlint on packages from '{project_name}'.</b><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
@@ -106,7 +106,7 @@
 
 - job-template:
     name: "tendrl-pkgval-2-{project_name}-rpmdeplint"
-    display-name: 'Tendrl pkgval: ({project_name}) - rpmdeplint'
+    display-name: 'Tendrl pkgval: ({project_name}) 2- rpmdeplint'
     description: |
       <b>Perform rpmdeplint on packages from '{project_name}'.</b><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
@@ -211,7 +211,7 @@
 
 - job-template:
     name: "tendrl-pkgval-3-{project_name}-repoclosure"
-    display-name: 'Tendrl pkgval: ({project_name}) - repoclosure'
+    display-name: 'Tendrl pkgval: ({project_name}) 3- repoclosure'
     description: |
       <b>Perform repoclosure on '{project_name}'.</b><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
@@ -316,7 +316,7 @@
 
 - job-template:
     name: "tendrl-pkgval-4-{project_name}-test-install"
-    display-name: 'Tendrl pkgval: ({project_name}) - packages installation'
+    display-name: 'Tendrl pkgval: ({project_name}) 4- packages installation'
     description: |
       <b>Perform install test on packages from '{project_name}'.</b><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
@@ -420,7 +420,7 @@
 
 - job-template:
     name: "tendrl-pkgval-5-{project_name}-unittests"
-    display-name: 'Tendrl pkgval: ({project_name}) - uninttests'
+    display-name: 'Tendrl pkgval: ({project_name}) 5- uninttests'
     description: |
       <b>Perform unittests on packages from '{project_name}'.</b><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>

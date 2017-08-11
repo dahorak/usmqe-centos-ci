@@ -80,7 +80,12 @@
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
       - shell: |
           #!/bin/bash -x
-          #cat ${{HOME}}/pkgval_{project_name}.hosts
+          set +x
+          key=$(cat ~/duffy.key)
+          RSYNC_PASSWORD=${{key:0:13}} rsync -av --delete logs/result.xml tendrl@artifacts.ci.centos.org::tendrl/rpmlint-results/rpmlint_{project_name}.xml
+          RSYNC_PASSWORD=${{key:0:13}} rsync -av --delete logs/result.xml tendrl@artifacts.ci.centos.org::tendrl/rpmlint-results/rpmlint_{project_name}_${{BUILD_NUMBER}}.xml
+          set +x
+
     publishers:
       - trigger-parameterized-builds:
           - project: 'tendrl-pkgval-2-{project_name}-rpmdeplint'

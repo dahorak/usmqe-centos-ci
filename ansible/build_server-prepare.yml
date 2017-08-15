@@ -30,6 +30,9 @@
   - name: Add EPEL repository
     yum: name="epel-release" state=latest
 
+  - name: WORKAROUND - install http-parser
+    shell: 'yum install -y http://springdale.math.ias.edu/data/puias/unsupported/7/x86_64//http-parser-2.7.1-3.sdl7.x86_64.rpm'
+
   - name: Install required packges
     yum: name="{{ item }}" state=latest
     with_items:

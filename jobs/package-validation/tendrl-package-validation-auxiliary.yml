@@ -1,0 +1,162 @@
+---
+- job-template:
+    name: "tendrl-pkgval-X-{project_name}-prepare"
+    display-name: 'Tendrl_pkgval-{project_name} prepare environment'
+    description: |
+      <b>Prepare environment for validation tests for packages from '{project_name}'.</b><br>
+      Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+      Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+      JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+      Managed by Jenkins Job Builder. Do not edit via web.<br>
+    project-type: freestyle
+    defaults: global
+    scm:
+      - git:
+          url: 'https://github.com/usmqe/usmqe-centos-ci.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-centos-ci
+          skip-tag: true
+          wipe-workspace: true
+      - git:
+          url: 'https://github.com/usmqe/usmqe-setup.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-setup
+          skip-tag: true
+          wipe-workspace: true
+
+    disabled: false
+    triggers: "{obj:triggers}"
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - "tendrl.*"
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+      - timeout:
+          timeout: 60
+          abort: true
+          type: absolute
+    node: 'tendrl-ci-slave01'
+    builders:
+      - shell: |
+          #!/bin/bash -xe
+          # Get machines from CentOS CI pool
+          env
+          cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+          ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+          CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+          ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv \
+            -e clustername=pkgval_{project_name} -M ${{CICO_DIR}} \
+            ${{ANSIBLE_DIR}}/package-validation-prepare.yml
+      - shell: |
+          #!/bin/bash -x
+          # Print Ansible host file
+          cat ${{HOME}}/pkgval_{project_name}.hosts
+      - shell: |
+          #!/bin/bash -xe
+          cd usmqe-setup
+          ansible-playbook -i ${{HOME}}/pkgval_{project_name}.hosts -vvv \
+            ${{WORKSPACE}}/usmqe-setup/qe_server.yml
+      - shell: |
+          #!/bin/bash -xe
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
+          ssh root@${{qe_server}} " \
+            echo -e '[grafana_repo]\nname=grafana_repo\nbaseurl=https://packagecloud.io/grafana/stable/el/6/x86_64\nrepo_gpgcheck=1\nenabled=1\ngpgcheck=1\ngpgkey=https://packagecloud.io/gpg.key https://grafanarel.s3.amazonaws.com/RPM-GPG-KEY-grafana\nsslverify=1\nsslcacert=/etc/pki/tls/certs/ca-bundle.crt\n' > /etc/yum.repos.d/grafana.repo"
+          cd usmqe-setup
+          ansible-playbook -i ${{HOME}}/pkgval_{project_name}.hosts -vvv \
+            ${{WORKSPACE}}/usmqe-setup/tendrl_unit_test_setup.yml
+      - shell: |
+          #!/bin/bash -x
+          ansible-playbook -i ${{HOME}}/pkgval_{project_name}.hosts -vvv \
+            ${{WORKSPACE}}/usmqe-setup/qe_server_sshkey.yml
+          #cat ${{HOME}}/pkgval_{project_name}.hosts
+
+
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-pkgval-1-{project_name}-rpmlint'
+            current-parameters: true
+            node-parameters: true
+            condition: SUCCESS
+
+      - trigger-parameterized-builds:
+          - project: 'tendrl-pkgval-X-{project_name}-teardown'
+            current-parameters: true
+            node-parameters: true
+            condition: FAILED
+
+
+- job-template:
+    name: "tendrl-pkgval-X-{project_name}-teardown"
+    display-name: 'Tendrl_pkgval-{project_name} Teardown'
+    description: |
+      <b>Teardown environment for validation tests for packages from '{project_name}'.</b><br>
+      Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+      Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+      JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+      Managed by Jenkins Job Builder. Do not edit via web.<br>
+    project-type: freestyle
+    defaults: global
+    disabled: false
+    triggers: []
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    properties:
+      - build-blocker:
+          use-build-blocker: true
+          blocking-jobs:
+            - "tendrl.*"
+    scm:
+      - git:
+          url: 'https://github.com/usmqe/usmqe-centos-ci.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-centos-ci
+          skip-tag: true
+          wipe-workspace: true
+
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+      - timeout:
+          timeout: 60
+          abort: true
+          type: absolute
+    node: 'tendrl-ci-slave01'
+    builders:
+      - shell: |
+          #!/bin/bash -xe
+          # Return machines to CentOS CI pool
+          env
+          cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+          ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+          CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+          ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv \
+            -e clustername=pkgval_{project_name} -M ${{CICO_DIR}} \
+            ${{ANSIBLE_DIR}}/centos-teardown.yml
+      - shell: |
+          #!/bin/bash -x
+          # Make sure that all machines return to pool
+          cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
+          ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
+          CICO_DIR=/usr/lib/python2.7/site-packages/cicoclient/ansible/
+          ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv \
+            -e clustername=pkgval_{project_name} -M ${{CICO_DIR}} \
+            ${{ANSIBLE_DIR}}/centos-inventory.yml
+          if grep -q RETURNED ${{HOME}}/pkgval_{project_name}.hosts; then
+            exit 0;
+          else
+            echo "There are still machine for cluster pkgval_{project_name} which should be returned to pool."
+            exit 1;
+          fi
+

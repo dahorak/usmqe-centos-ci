@@ -1,0 +1,553 @@
+---
+- job-template:
+    name: "tendrl-pkgval-1-{project_name}-rpmlint"
+    display-name: 'Tendrl pkgval: ({project_name}) 1- rpmlint'
+    description: |
+      <b>Perform rpmlint on packages from '{project_name}'.</b><br>
+      Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+      Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+      JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+      Managed by Jenkins Job Builder. Do not edit via web.<br>
+    scm:
+      - git:
+          url: 'https://github.com/usmqe/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
+    project-type: freestyle
+    defaults: global
+    parameters:
+      - string:
+          name: USM_CORE_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_CORE_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "USM Repo URL"
+    disabled: false
+    triggers: []
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+    node: 'tendrl-ci-slave01'
+    builders:
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
+          scp ${{HOME}}/pkgval_{project_name}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          # prepare required variables
+          echo "" > usm.ini
+          echo "[usmqepytest]" >> usm.ini
+          echo "usm_log_level = DEBUG" >> usm.ini
+          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
+          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmlint";
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            echo python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+          pwd
+          echo "qe_server=${{qe_server}}"
+          echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+      - shell: |
+          #!/bin/bash -x
+          set +x
+          key=$(cat ~/duffy.key)
+          RSYNC_PASSWORD=${{key:0:13}} rsync -av --delete logs/result.xml tendrl@artifacts.ci.centos.org::tendrl/rpmlint-results/rpmlint_{project_name}.xml
+          RSYNC_PASSWORD=${{key:0:13}} rsync -av --delete logs/result.xml tendrl@artifacts.ci.centos.org::tendrl/rpmlint-results/rpmlint_{project_name}_${{BUILD_NUMBER}}.xml
+          set +x
+
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-pkgval-2-{project_name}-rpmdeplint'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
+
+      - xunit:
+          thresholdmode: 'number'
+          thresholds:
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+          types:
+            - junit:
+                pattern: "logs/result.xml"
+
+- job-template:
+    name: "tendrl-pkgval-2-{project_name}-rpmdeplint"
+    display-name: 'Tendrl pkgval: ({project_name}) 2- rpmdeplint'
+    description: |
+      <b>Perform rpmdeplint on packages from '{project_name}'.</b><br>
+      Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+      Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+      JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+      Managed by Jenkins Job Builder. Do not edit via web.<br>
+    scm:
+      - git:
+          url: 'https://github.com/usmqe/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
+    project-type: freestyle
+    defaults: global
+    parameters:
+      - string:
+          name: USM_CORE_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_CORE_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "USM Repo URL"
+    disabled: false
+    triggers: []
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+    node: 'tendrl-ci-slave01'
+    builders:
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
+          scp ${{HOME}}/pkgval_{project_name}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          # prepare required variables
+          echo "" > usm.ini
+          echo "[usmqepytest]" >> usm.ini
+          echo "usm_log_level = DEBUG" >> usm.ini
+          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
+          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_rpmdeplint /home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repo_packagelist";
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            echo python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+          pwd
+          echo "qe_server=${{qe_server}}"
+          echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+      - shell: |
+          #!/bin/bash -x
+          #cat ${{HOME}}/pkgval_{project_name}.hosts
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-pkgval-3-{project_name}-repoclosure'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
+
+      - xunit:
+          thresholdmode: 'number'
+          thresholds:
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+          types:
+            - junit:
+                pattern: "logs/result.xml"
+
+- job-template:
+    name: "tendrl-pkgval-3-{project_name}-repoclosure"
+    display-name: 'Tendrl pkgval: ({project_name}) 3- repoclosure'
+    description: |
+      <b>Perform repoclosure on '{project_name}'.</b><br>
+      Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+      Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+      JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+      Managed by Jenkins Job Builder. Do not edit via web.<br>
+    scm:
+      - git:
+          url: 'https://github.com/usmqe/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
+    project-type: freestyle
+    defaults: global
+    parameters:
+      - string:
+          name: USM_CORE_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_CORE_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "USM Repo URL"
+    disabled: false
+    triggers: []
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+    node: 'tendrl-ci-slave01'
+    builders:
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
+          scp ${{HOME}}/pkgval_{project_name}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          # prepare required variables
+          echo "" > usm.ini
+          echo "[usmqepytest]" >> usm.ini
+          echo "usm_log_level = DEBUG" >> usm.ini
+          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
+          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_rpm.py::test_repoclosure";
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            echo python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+          pwd
+          echo "qe_server=${{qe_server}}"
+          echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+      - shell: |
+          #!/bin/bash -x
+          #cat ${{HOME}}/pkgval_{project_name}.hosts
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-pkgval-4-{project_name}-test-install'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
+
+      - xunit:
+          thresholdmode: 'number'
+          thresholds:
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+          types:
+            - junit:
+                pattern: "logs/result.xml"
+
+- job-template:
+    name: "tendrl-pkgval-4-{project_name}-test-install"
+    display-name: 'Tendrl pkgval: ({project_name}) 4- packages installation'
+    description: |
+      <b>Perform install test on packages from '{project_name}'.</b><br>
+      Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+      Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+      JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+      Managed by Jenkins Job Builder. Do not edit via web.<br>
+    scm:
+      - git:
+          url: 'https://github.com/usmqe/usmqe-tests.git'
+          branches:
+            - "*/master"
+          basedir: usmqe-tests
+          skip-tag: true
+          wipe-workspace: true
+    project-type: freestyle
+    defaults: global
+    parameters:
+      - string:
+          name: USM_CORE_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_CORE_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "USM Repo URL"
+    disabled: false
+    triggers: []
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+    node: 'tendrl-ci-slave01'
+    builders:
+      - shell: |
+          #!/bin/bash -x
+          #cd usmqe-tests
+          ## prepare hosts file
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
+          scp ${{HOME}}/pkgval_{project_name}.hosts \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
+          # prepare required variables
+          echo "" > usm.ini
+          echo "[usmqepytest]" >> usm.ini
+          echo "usm_log_level = DEBUG" >> usm.ini
+          echo "usm_core_baseurl = ${{USM_CORE_REPO}}" >> usm.ini
+          echo "usm_core_gpgkey_url = ${{USM_CORE_REPO_GPGKEY}}" >> usm.ini
+          echo "usm_deps_baseurl = ${{USM_DEPS_REPO}}" >> usm.ini
+          echo "usm_deps_gpgkey_url = ${{USM_DEPS_REPO_GPGKEY}}" >> usm.ini
+          scp usm.ini usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+          test="/home/usmqe/usmqe-tests/usmqe_tests/rpm/test_install.py";
+          # prepare env
+          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+            pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
+            env ; \
+            cd /home/usmqe/usmqe-tests/; \
+            cat conf/usm.hosts ; \
+            cat conf/usm.ini ; \
+            echo python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}; \
+            python -m pytest --color=yes --junit-xml=logs/result.xml -vvvrx ${{test}}"
+          pwd
+          echo "qe_server=${{qe_server}}"
+          echo "scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs ."
+          scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-pkgval-5-{project_name}-unittests'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
+
+      - xunit:
+          thresholdmode: 'number'
+          thresholds:
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+          types:
+            - junit:
+                pattern: "logs/result.xml"
+
+
+
+- job-template:
+    name: "tendrl-pkgval-5-{project_name}-unittests"
+    display-name: 'Tendrl pkgval: ({project_name}) 5- uninttests'
+    description: |
+      <b>Perform unittests on packages from '{project_name}'.</b><br>
+      Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+      Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+      JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
+      Managed by Jenkins Job Builder. Do not edit via web.<br>
+    scm: []
+    project-type: freestyle
+    defaults: global
+    parameters:
+      - string:
+          name: USM_CORE_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_CORE_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/{copr_user}/{target_repo}/pubkey.gpg"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "USM Repo URL"
+      - string:
+          name: USM_DEPS_REPO_GPGKEY
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "USM Repo URL"
+    disabled: false
+    triggers: []
+    concurrent: false
+    quiet-period: 5
+    block-downstream: true
+    block-upstream: true
+    wrappers:
+      - ansicolor:
+          colormap: "xterm"
+    node: 'tendrl-ci-slave01'
+    builders:
+      - shell: |
+          #!/bin/bash -x
+          qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
+          for module in commons gluster_integration node_agent monitoring_integration; do
+            ssh usmqe@${{qe_server}} " \
+              cd /home/usmqe/; \
+              mkdir /home/usmqe/logs; \
+              echo python2.7 -m pytest --color=yes --junit-xml=/home/usmqe/logs/result-${{module}}.xml -vvvrx \
+                --ignore=/usr/lib/python2.7/site-packages/tendrl/$module/tests/fixme \
+                /usr/lib/python2.7/site-packages/tendrl/${{module}}/tests/; \
+              python2.7 -m pytest --color=yes --junit-xml=/home/usmqe/logs/result-${{module}}.xml -vvvrx \
+                --ignore=/usr/lib/python2.7/site-packages/tendrl/$module/tests/fixme \
+                /usr/lib/python2.7/site-packages/tendrl/${{module}}/tests/";
+          done
+
+          pwd
+          echo "qe_server=${{qe_server}}"
+          rm -f "logs/*"
+          scp -r usmqe@${{qe_server}}:/home/usmqe/logs .
+          ssh usmqe@${{qe_server}} "rm -f /home/usmqe/logs/*"
+          sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result-*.xml
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-pkgval-X-{project_name}-teardown'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
+
+      - xunit:
+          thresholdmode: 'number'
+          thresholds:
+            - failed:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+            - skipped:
+                unstable: 0
+                unstablenew: 0
+                failure: 0
+                failurenew: 0
+          types:
+            - junit:
+                pattern: "logs/result-*.xml"
+
+
+- job-group:
+    name: 'tendrl-package-validation-jobs'
+    jobs:
+      - 'tendrl-pkgval-X-{project_name}-prepare'
+      - 'tendrl-pkgval-1-{project_name}-rpmlint'
+      - 'tendrl-pkgval-2-{project_name}-rpmdeplint'
+      - 'tendrl-pkgval-3-{project_name}-repoclosure'
+      - 'tendrl-pkgval-4-{project_name}-test-install'
+      - 'tendrl-pkgval-5-{project_name}-unittests'
+      - 'tendrl-pkgval-X-{project_name}-teardown'
+
+- project:
+    name: 'master'
+    project_name: 'master'
+    jobs:
+      - 'tendrl-package-validation-jobs'
+    triggers:
+      - timed: 'H 2 * * *'
+    copr_user: 'tendrl'
+    target_repo: 'tendrl'
+
+- project:
+    name: 'release'
+    project_name: 'release'
+    jobs:
+      - 'tendrl-package-validation-jobs'
+    triggers: []
+    copr_user: 'dahorak'
+    target_repo: 'tendrl-test-release'
+
+- project:
+    name: 'FEATURE-BRANCH'
+    project_name: 'FEATURE-BRANCH'
+    jobs:
+      - 'tendrl-package-validation-jobs'
+    triggers: []
+    copr_user: 'dahorak'
+    target_repo: 'tendrl-test-new-feature'

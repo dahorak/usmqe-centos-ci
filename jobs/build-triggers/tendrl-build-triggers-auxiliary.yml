@@ -17,9 +17,9 @@
     block-upstream: false
     scm:
       - git:
-          url: 'https://github.com/dahorak/usmqe-centos-ci.git'
+          url: 'https://github.com/usmqe/usmqe-centos-ci.git'
           branches:
-            - "*/tendrl-jobs-build-triggers"
+            - "*/master"
           basedir: usmqe-centos-ci
           skip-tag: true
           wipe-workspace: true
@@ -73,9 +73,9 @@
     block-upstream: false
     scm:
       - git:
-          url: 'https://github.com/dahorak/usmqe-centos-ci.git'
+          url: 'https://github.com/usmqe/usmqe-centos-ci.git'
           branches:
-            - "*/tendrl-jobs-build-triggers"
+            - "*/master"
           basedir: usmqe-centos-ci
           skip-tag: true
           wipe-workspace: true

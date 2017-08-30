@@ -10,7 +10,7 @@
         api_key={{ api_key }}
         arch=x86_64
         release=7
-        count=9
+        count=10
       register: data
     
     - debug: msg="Host {{ item.key }} has this ssid {{ item.value.comment }}"
@@ -28,38 +28,44 @@
         name="{{ data.results.hosts.keys()[1] }}"
         groups="usm_server"
 
+    # usm_client
+    - name: Add host to group
+      add_host:
+        name="{{ data.results.hosts.keys()[2] }}"
+        groups="usm_client"
+
     # usm_nodes
     - name: Add hosts to group
       add_host:
         name="{{ item }}"
         groups="usm_nodes"
-      with_items: "{{ data.results.hosts.keys()[2:] }}"
+      with_items: "{{ data.results.hosts.keys()[3:] }}"
 
     # ceph_mon
     - name: Add hosts to group
       add_host:
         name="{{ item }}"
         groups="ceph_mon"
-      with_items: "{{ data.results.hosts.keys()[2:5] }}"
+      with_items: "{{ data.results.hosts.keys()[3:6] }}"
     # mons 
     - name: Add hosts to group
       add_host:
         name="{{ item }}"
         groups="mons"
-      with_items: "{{ data.results.hosts.keys()[2:5] }}"
+      with_items: "{{ data.results.hosts.keys()[3:6] }}"
 
     # ceph_osd
     - name: Add hosts to group
       add_host:
         name="{{ item }}"
         groups="ceph_osd"
-      with_items: "{{ data.results.hosts.keys()[5:] }}"
+      with_items: "{{ data.results.hosts.keys()[6:] }}"
     # osds
     - name: Add hosts to group
       add_host:
         name="{{ item }}"
         groups="osds"
-      with_items: "{{ data.results.hosts.keys()[5:] }}"
+      with_items: "{{ data.results.hosts.keys()[6:] }}"
 
 
   roles: 

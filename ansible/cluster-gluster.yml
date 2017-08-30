@@ -10,7 +10,7 @@
         api_key={{ api_key }}
         arch=x86_64
         release=7
-        count=6
+        count=7
       register: data
     
     - debug: msg="Host {{ item.key }} has this ssid {{ item.value.comment }}"
@@ -28,19 +28,25 @@
         name="{{ data.results.hosts.keys()[1] }}"
         groups="usm_server"
 
+    # usm_client
+    - name: Add host to group
+      add_host:
+        name="{{ data.results.hosts.keys()[2] }}"
+        groups="usm_client"
+
     # usm_nodes
     - name: Add hosts to group
       add_host:
         name="{{ item }}"
         groups="usm_nodes"
-      with_items: "{{ data.results.hosts.keys()[2:] }}"
+      with_items: "{{ data.results.hosts.keys()[3:] }}"
 
     # gluster
     - name: Add hosts to group
       add_host:
         name="{{ item }}"
         groups="gluster"
-      with_items: "{{ data.results.hosts.keys()[2:] }}"
+      with_items: "{{ data.results.hosts.keys()[3:] }}"
 
 
   roles: 

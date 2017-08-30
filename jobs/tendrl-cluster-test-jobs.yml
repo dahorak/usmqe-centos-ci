@@ -472,7 +472,7 @@
       - ceph:
           timed: 'H 21 * * *'
           timeout: 60
-          disabled: false
+          disabled: true
           node: 'tendrl-ci-slave01'
       - gluster:
           timed: 'H 23 * * *'

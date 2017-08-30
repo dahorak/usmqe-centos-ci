@@ -143,7 +143,7 @@
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
           description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
 
-    disabled: false
+    disabled: "{obj:disabled}"
     triggers:
       - timed: ''
     concurrent: false
@@ -240,7 +240,7 @@
           name: TEST_LIST
           default: "{clustername}"
           description: "List of tests to execute (and any additional parameter for py.test)."
-    disabled: false
+    disabled: "{obj:disabled}"
     triggers:
       - timed: ''
     concurrent: false
@@ -323,7 +323,7 @@
           name: TEST_LIST_OTHERS
           default: others
           description: "List of tests to execute (and any additional parameter for py.test)."
-    disabled: false
+    disabled: "{obj:disabled}"
     triggers:
       - timed: ''
     concurrent: false

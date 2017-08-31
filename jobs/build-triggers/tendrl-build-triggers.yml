@@ -20,6 +20,9 @@
     node: 'tendrl-ci-slave01'
     triggers: "{obj:triggers}"
     scm: "{obj:scm}"
+    properties:
+      - github:
+          url: 'https://github.com/Tendrl/{package_name}/'
     wrappers:
       - timeout:
           timeout: 60
@@ -161,8 +164,9 @@
     copr_user: 'tendrl'
     run_package_validation: true
     triggers:
+      - github
       - pollscm:
-          cron: 'H */4 * * *'
+          cron: 'H/30 * * * *'
           ignore-post-commit-hooks: false
     scm:
       - git:

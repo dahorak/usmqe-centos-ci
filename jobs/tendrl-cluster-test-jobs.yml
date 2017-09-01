@@ -102,13 +102,6 @@
         Managed by Jenkins Job Builder. Do not edit via web.<br>
     scm:
       - git:
-          url: 'https://github.com/dahorak/ansible-gluster.git'
-          branches:
-            - "*/master"
-          basedir: ansible-gluster
-          skip-tag: true
-          wipe-workspace: true
-      - git:
           url: 'https://github.com/usmqe/usmqe-setup.git'
           branches:
             - "*/master"
@@ -158,7 +151,6 @@
       - shell: |
           #!/bin/bash -xe
           cd usmqe-setup
-          export ANSIBLE_LIBRARY=${{WORKSPACE}}/ansible-gluster/
           export ANSIBLE_ROLES_PATH=${{WORKSPACE}}/tendrl-ansible/roles/
           export ANSIBLE_FORCE_COLOR=true
           ansible-playbook -i ${{HOME}}/cluster-{clustername}.hosts -vvv \
@@ -179,15 +171,35 @@
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
             usmqe@${{qe_server}}:/home/usmqe/cluster-{clustername}.hosts
-          ssh usmqe@${{qe_server}} "ANSIBLE_LIBRARY=/home/usmqe/ansible-gluster/ \
+          ssh usmqe@${{qe_server}} " \
             ANSIBLE_FORCE_COLOR=true \
             ANSIBLE_ROLES_PATH=/home/usmqe/tendrl-ansible/roles/ \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
-            /home/usmqe/usmqe-setup/ci_default_import.yml \
+            /home/usmqe/usmqe-setup/ci_default_pre_setup.yml \
             -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \
             tendrl_repo_gpgkey_url=${{TENDRL_REPO_GPGKEY_URL}} \
             tendrl_dependencies_repo_url=${{TENDRL_DEPENDENCIES_REPO_URL}} \
             tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}'"
+
+          for conf in volume_usmqe_alpha_distrep_4x2.create.conf; do
+            ssh usmqe@${{qe_server}} " \
+              python /home/usmqe/usmqe-setup/bin/ansible2gdeploy.py \
+                -i /home/usmqe/cluster-{clustername}.hosts \
+                /home/usmqe/usmqe-setup/gdeploy_config/${{conf}} \
+                -o /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
+            ssh usmqe@${{qe_server}} "cat /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
+          done
+
+          ssh usmqe@${{qe_server}} " \
+            ANSIBLE_FORCE_COLOR=true \
+            ANSIBLE_ROLES_PATH=/home/usmqe/tendrl-ansible/roles/ \
+            ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
+            /home/usmqe/usmqe-setup/tendrl.yml \
+            -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \
+            tendrl_repo_gpgkey_url=${{TENDRL_REPO_GPGKEY_URL}} \
+            tendrl_dependencies_repo_url=${{TENDRL_DEPENDENCIES_REPO_URL}} \
+            tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}'"
+
           scp usmqe@${{qe_server}}:/home/usmqe/usmqe-setup/usm.ini ${{HOME}}/cluster-{clustername}.ini
 
 

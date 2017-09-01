@@ -25,6 +25,13 @@
           basedir: usmqe-setup
           skip-tag: true
           wipe-workspace: true
+      - git:
+          url: 'https://github.com/Tendrl/tendrl-ansible.git'
+          branches:
+              - "*/master"
+          basedir: tendrl-ansible
+          skip-tag: true
+          wipe-workspace: true
 
     disabled: false
     triggers: "{obj:triggers}"
@@ -63,6 +70,7 @@
       - shell: |
           #!/bin/bash -xe
           cd usmqe-setup
+          export ANSIBLE_ROLES_PATH=${{WORKSPACE}}/tendrl-ansible/roles/
           ansible-playbook -i ${{HOME}}/pkgval_{project_name}.hosts -vvv \
             ${{WORKSPACE}}/usmqe-setup/qe_server.yml
       - shell: |

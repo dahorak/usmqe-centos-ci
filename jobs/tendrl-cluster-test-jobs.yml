@@ -93,7 +93,7 @@
 
 - job-template:
     name: "tendrl-2-1-cluster-{clustername}-install"
-    display-name: 'Tendrl-5: cluster-{clustername} Cluster install'
+    display-name: 'Tendrl test: cluster-{clustername} Cluster install'
     description: |
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
@@ -230,7 +230,7 @@
 
 - job-template:
     name: "tendrl-2-2-cluster-{clustername}-test-api"
-    display-name: 'Tendrl-6: cluster-{clustername} Test API'
+    display-name: 'Tendrl test: cluster-{clustername} Test API'
     description: |
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
@@ -318,7 +318,7 @@
 
 - job-template:
     name: "tendrl-2-3-cluster-{clustername}-test-api-others"
-    display-name: 'Tendrl-7: cluster-{clustername} Test API others'
+    display-name: 'Tendrl test: cluster-{clustername} Test API others'
     description: 'Do not edit this job through the web!'
     scm:
       - git:

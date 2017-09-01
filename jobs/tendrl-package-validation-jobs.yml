@@ -123,6 +123,7 @@
     name: "tendrl-0-1-{clustername}-rpmlint"
     display-name: 'Tendrl-1: rpmlint'
     description: |
+        Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/rpmlint.html">rpmlint</a><br>
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
@@ -229,6 +230,8 @@
     name: "tendrl-0-2-{clustername}-rpmdeplint"
     display-name: 'Tendrl-2: rpmdeplint'
     description: |
+        Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/rpmdeplint.html">rpmdeplint</a><br>
+        Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/repo_packagelist.html">repo packagelist</a><br>
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
@@ -336,6 +339,7 @@
     name: "tendrl-0-3-{clustername}-repoclosure"
     display-name: 'Tendrl-3: repoclosure'
     description: |
+        Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/repoclosure.html">repoclosure</a><br>
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
@@ -443,6 +447,7 @@
     name: "tendrl-0-4-{clustername}-test-install"
     display-name: 'Tendrl-4: Package Installation'
     description: |
+        Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/yum_install.html">yum install</a><br>
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
         Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>

@@ -4,6 +4,7 @@
     display-name: 'Tendrl pkgval: ({project_name}) 1- rpmlint'
     description: |
       <b>Perform rpmlint on packages from '{project_name}'.</b><br>
+      Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/rpmlint.html">rpmlint</a><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
       Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
       JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
@@ -115,6 +116,8 @@
     display-name: 'Tendrl pkgval: ({project_name}) 2- rpmdeplint'
     description: |
       <b>Perform rpmdeplint on packages from '{project_name}'.</b><br>
+      Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/rpmdeplint.html">rpmdeplint</a><br>
+      Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/repo_packagelist.html">repo packagelist</a><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
       Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
       JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
@@ -221,6 +224,7 @@
     display-name: 'Tendrl pkgval: ({project_name}) 3- repoclosure'
     description: |
       <b>Perform repoclosure on '{project_name}'.</b><br>
+      Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/repoclosure.html">repoclosure</a><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
       Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
       JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
@@ -327,6 +331,7 @@
     display-name: 'Tendrl pkgval: ({project_name}) 4- packages installation'
     description: |
       <b>Perform install test on packages from '{project_name}'.</b><br>
+      Test documentation: <a href="https://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/rpm/yum_install.html">yum install</a><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
       Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
       JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
@@ -432,6 +437,7 @@
     display-name: 'Tendrl pkgval: ({project_name}) 5- uninttests'
     description: |
       <b>Perform unittests on packages from '{project_name}'.</b><br>
+      Test documentation: <a href="http://usmqe-testdoc.readthedocs.io/en/latest/minimal-acceptance/unit-test-rerun/index.html">unittests</a><br>
       Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
       Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
       JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>

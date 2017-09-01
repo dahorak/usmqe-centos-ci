@@ -545,9 +545,10 @@
     project_name: 'release'
     jobs:
       - 'tendrl-package-validation-jobs'
-    triggers: []
-    copr_user: 'dahorak'
-    target_repo: 'tendrl-test-release'
+    triggers:
+      - timed: 'H 2 * * *'
+    copr_user: 'tendrl'
+    target_repo: 'release'
 
 - project:
     name: 'FEATURE-BRANCH'

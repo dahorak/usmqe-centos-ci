@@ -181,7 +181,7 @@
             tendrl_dependencies_repo_url=${{TENDRL_DEPENDENCIES_REPO_URL}} \
             tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}'"
 
-          for conf in volume_usmqe_alpha_distrep_4x2.create.conf; do
+          for conf in volume_usmqe_alpha_distrep_4x2.create.conf volume_usmqe_alpha_distrep_4x2.mount.conf; do
             ssh usmqe@${{qe_server}} " \
               python /home/usmqe/usmqe-setup/bin/ansible2gdeploy.py \
                 -i /home/usmqe/cluster-{clustername}.hosts \

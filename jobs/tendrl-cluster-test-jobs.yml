@@ -187,6 +187,7 @@
                 -i /home/usmqe/cluster-{clustername}.hosts \
                 /home/usmqe/usmqe-setup/gdeploy_config/${{conf}} \
                 -o /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
+            ssh usmqe@${{qe_server}} "sed -i 's/vd\([a-z]\)/sd\1/g' /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
             ssh usmqe@${{qe_server}} "cat /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
           done
 

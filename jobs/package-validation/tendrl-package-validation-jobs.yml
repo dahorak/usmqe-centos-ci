@@ -111,6 +111,9 @@
             - junit:
                 pattern: "logs/result.xml"
 
+      - email:
+          recipients: dahorak@redhat.com
+
 - job-template:
     name: "tendrl-pkgval-2-{project_name}-rpmdeplint"
     display-name: 'Tendrl pkgval: ({project_name}) 2- rpmdeplint'
@@ -219,6 +222,9 @@
             - junit:
                 pattern: "logs/result.xml"
 
+      - email:
+          recipients: dahorak@redhat.com
+
 - job-template:
     name: "tendrl-pkgval-3-{project_name}-repoclosure"
     display-name: 'Tendrl pkgval: ({project_name}) 3- repoclosure'
@@ -326,6 +332,9 @@
             - junit:
                 pattern: "logs/result.xml"
 
+      - email:
+          recipients: dahorak@redhat.com
+
 - job-template:
     name: "tendrl-pkgval-4-{project_name}-test-install"
     display-name: 'Tendrl pkgval: ({project_name}) 4- packages installation'
@@ -430,6 +439,9 @@
             - junit:
                 pattern: "logs/result.xml"
 
+      - email:
+          recipients: dahorak@redhat.com
+
 
 
 - job-template:
@@ -517,6 +529,9 @@
           types:
             - junit:
                 pattern: "logs/result-*.xml"
+
+      - email:
+          recipients: dahorak@redhat.com
 
 
 - job-group:

@@ -145,6 +145,7 @@
       - gluster-integration
       - monitoring-integration
       - node-agent
+      - notifier
       - ui
     package_build_job_list:
       - "tendrl-build-1-{project_name}-api"
@@ -152,6 +153,7 @@
       - "tendrl-build-1-{project_name}-gluster-integration"
       - "tendrl-build-1-{project_name}-monitoring-integration"
       - "tendrl-build-1-{project_name}-node-agent"
+      - "tendrl-build-1-{project_name}-notifier"
       - "tendrl-build-1-{project_name}-ui"
 
 
@@ -188,6 +190,7 @@
       - gluster-integration
       - monitoring-integration
       - node-agent
+      - notifier
       - ui
     package_build_job_list:
       - "tendrl-build-1-{project_name}-api"
@@ -195,6 +198,7 @@
       - "tendrl-build-1-{project_name}-gluster-integration"
       - "tendrl-build-1-{project_name}-monitoring-integration"
       - "tendrl-build-1-{project_name}-node-agent"
+      - "tendrl-build-1-{project_name}-notifier"
       - "tendrl-build-1-{project_name}-ui"
 
 
@@ -220,6 +224,7 @@
       - gluster-integration
       - monitoring-integration
       - node-agent
+      - notifier
       - ui
     package_build_job_list:
       - "tendrl-build-1-{project_name}-api"
@@ -227,4 +232,5 @@
       - "tendrl-build-1-{project_name}-gluster-integration"
       - "tendrl-build-1-{project_name}-monitoring-integration"
       - "tendrl-build-1-{project_name}-node-agent"
+      - "tendrl-build-1-{project_name}-notifier"
       - "tendrl-build-1-{project_name}-ui"

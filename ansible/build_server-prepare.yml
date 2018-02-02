@@ -41,6 +41,7 @@
     yum: name="{{ item }}" state=latest
     with_items:
     - copr-cli
+    - createrepo
     - fedpkg
     - fontconfig
     - git

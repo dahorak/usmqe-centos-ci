@@ -225,7 +225,7 @@
             additional_repos_usm_nodes=${{ADDITIONAL_REPOS_USM_NODES}} \
             additional_repos_usm_client=${{ADDITIONAL_REPOS_USM_CLIENT}}'"
 
-          for conf in volume_usmqe_alpha_distrep_4x2.create.conf volume_usmqe_alpha_distrep_4x2.mount.conf; do
+          for conf in volume_alpha_distrep_6x2.create.conf volume_alpha_distrep_6x2.mount.conf; do
             ssh usmqe@${{qe_server}} " \
               python /home/usmqe/usmqe-setup/bin/ansible2gdeploy.py \
                 -i /home/usmqe/cluster-{clustername}.hosts \
@@ -233,6 +233,7 @@
                 -o /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
             ssh usmqe@${{qe_server}} "sed -i 's/vd\([a-z]\)/sd\1/g' /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
             ssh usmqe@${{qe_server}} "cat /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
+            ssh usmqe@${{qe_server}} "gdeploy -c /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
           done
 
           ssh usmqe@${{qe_server}} " \

@@ -482,11 +482,6 @@
     jobs:
       - 'tendrl-cluster-test-jobs'
     clustername:
-      - ceph:
-          timed: 'H 21 * * *'
-          timeout: 60
-          disabled: true
-          node: 'tendrl-ci-slave01'
       - gluster:
           timed: 'H 23 * * *'
           timeout: 60

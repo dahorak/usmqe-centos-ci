@@ -1,5 +1,142 @@
 ---
 - job-template:
+    name: "tendrl-2-cluster-{clustername}"
+    display-name: 'Tendrl2 - cluster-{clustername}'
+    description: |
+      <b>Job for management of installation and testing of {clustername} cluster.</b><br>
+      Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
+      Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
+      JJB Code Location: <a href="https://github.com/Tendrl/tendrl-ci/tree/master/jobs">tendrl-ci</a><br>
+      Managed by Jenkins Job Builder. Do not edit via web.<br>
+    project-type: freestyle
+    defaults: global
+    disabled: false
+    concurrent: false
+    quiet-period: 5
+    block-downstream: false
+    block-upstream: false
+    node: 'tendrl-ci-slave01'
+    triggers:
+      - timed: '{timed}'
+    wrappers:
+      - timeout:
+          timeout: 120
+          abort: true
+          type: absolute
+    parameters:
+      - string:
+          name: TENDRL_REPO_URL
+          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/release/epel-7-x86_64/"
+          description: "Tendrl main repo URL."
+      - string:
+          name: TENDRL_REPO_GPGKEY_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/release/pubkey.gpg"
+          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
+      - string:
+          name: TENDRL_DEPENDENCIES_REPO_URL
+          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
+          description: "Tendrl dependencies repo URL."
+      - string:
+          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
+          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
+          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
+      - string:
+          name: ADDITIONAL_REPOS
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_SERVER
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_NODES
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_CLIENT
+          default: ""
+          description: "Coma separated list of additional repos."
+
+    builders:
+      - shell: |
+          #!/bin/bash -e
+          echo "TENDRL_REPO_URL=${{TENDRL_REPO_URL}}"
+          echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}"
+          echo "TENDRL_DEPENDENCIES_REPO_URL=${{TENDRL_DEPENDENCIES_REPO_URL}}"
+          echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}"
+          echo "ADDITIONAL_REPOS=${{ADDITIONAL_REPOS}}"
+          echo "ADDITIONAL_REPOS_USM_SERVER=${{ADDITIONAL_REPOS_USM_SERVER}}"
+          echo "ADDITIONAL_REPOS_USM_NODES=${{ADDITIONAL_REPOS_USM_NODES}}"
+          echo "ADDITIONAL_REPOS_USM_CLIENT=${{ADDITIONAL_REPOS_USM_CLIENT}}"
+          echo
+          echo "##############################################################"
+          echo "Prepare {clustername} cluster."
+          echo
+
+      - trigger-builds:
+        - project: "tendrl-2-0-cluster-{clustername}-create"
+          current-parameters: true
+          block: true
+
+      - shell: |
+          #!/bin/bash -e
+          echo
+          echo "##############################################################"
+          echo "Install {clustername} cluster."
+          echo
+
+      - trigger-builds:
+        - project: 'tendrl-2-1-cluster-{clustername}-install'
+          current-parameters: true
+          block: true
+
+      - shell: |
+          #!/bin/bash -e
+          echo
+          echo "##############################################################"
+          echo "Run tests on {clustername} cluster."
+          echo
+          # WORKAROUND: https://github.com/Tendrl/api/issues/353
+          sleep 30
+
+      - trigger-builds:
+        - project: 'tendrl-2-2-cluster-{clustername}-test-api'
+          current-parameters: true
+          block: true
+          block-thresholds:
+            build-step-failure-threshold: never
+            unstable-threshold: never
+            failure-threshold: never
+
+      - shell: |
+          #!/bin/bash -e
+          echo
+          echo "##############################################################"
+          echo "Run tests on {clustername} cluster."
+          echo
+
+      - trigger-builds:
+        - project: 'tendrl-2-3-cluster-{clustername}-test-api-others'
+          current-parameters: true
+          block: true
+          block-thresholds:
+            build-step-failure-threshold: FAILURE
+            unstable-threshold: UNSTABLE
+            failure-threshold: FAILURE
+
+
+    publishers:
+      - trigger-parameterized-builds:
+          - project: 'tendrl-2-X-cluster-{clustername}-teardown'
+            current-parameters: true
+            node-parameters: true
+            condition: ALWAYS
+
+      - email:
+          recipients: dahorak@redhat.com
+
+
+- job-template:
     name: "tendrl-2-0-cluster-{clustername}-create"
     display-name: 'Tendrl2-0 - cluster-{clustername} Cluster create'
     description: |
@@ -54,9 +191,9 @@
           wipe-workspace: true
     disabled: "{obj:disabled}"
     triggers:
-      - timed: '{timed}'
+      - timed: ''
     concurrent: false
-    quiet-period: 5
+    quiet-period: 10
     block-downstream: true
     block-upstream: true
     properties:
@@ -103,12 +240,6 @@
           cat ${{HOME}}/cluster-{clustername}.hosts
 
     publishers:
-      - trigger-parameterized-builds:
-          - project: 'tendrl-2-1-cluster-{clustername}-install'
-            current-parameters: true
-            node-parameters: true
-            condition: SUCCESS
-
       - trigger-parameterized-builds:
           - project: 'tendrl-2-X-cluster-{clustername}-teardown'
             current-parameters: true
@@ -272,19 +403,6 @@
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             -u root /home/usmqe/ceph-ansible/site.yml"
 
-    publishers:
-      - trigger-parameterized-builds:
-          - project: 'tendrl-2-2-cluster-{clustername}-test-api'
-            current-parameters: true
-            node-parameters: true
-            condition: SUCCESS
-
-      - trigger-parameterized-builds:
-          - project: 'tendrl-2-X-cluster-{clustername}-teardown'
-            current-parameters: true
-            node-parameters: true
-            condition: FAILED
-
 
 - job-template:
     name: "tendrl-2-2-cluster-{clustername}-test-api"
@@ -351,11 +469,6 @@
           #!/bin/bash -x
           #cat ${{HOME}}/cluster-{clustername}.hosts
     publishers:
-      - trigger-parameterized-builds:
-          - project: 'tendrl-2-3-cluster-{clustername}-test-api-others'
-            current-parameters: true
-            node-parameters: true
-            condition: ALWAYS
       - xunit:
           thresholdmode: 'number'
           thresholds:
@@ -434,11 +547,6 @@
           #!/bin/bash -x
           #cat ${{HOME}}/cluster-{clustername}.hosts
     publishers:
-      - trigger-parameterized-builds:
-          - project: 'tendrl-2-X-cluster-{clustername}-teardown'
-            current-parameters: true
-            node-parameters: true
-            condition: ALWAYS
       - xunit:
           thresholdmode: 'number'
           thresholds:
@@ -470,7 +578,7 @@
     defaults: global
     disabled: "{obj:disabled}"
     triggers:
-      - timed: '{timed}'
+      - timed: ''
     concurrent: false
     quiet-period: 5
     block-downstream: true
@@ -528,6 +636,7 @@
 - job-group:
     name: 'tendrl-cluster-test-jobs'
     jobs:
+      - 'tendrl-2-cluster-{clustername}'
       - 'tendrl-2-0-cluster-{clustername}-create'
       - 'tendrl-2-1-cluster-{clustername}-install'
       - 'tendrl-2-2-cluster-{clustername}-test-api'

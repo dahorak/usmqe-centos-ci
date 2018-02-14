@@ -64,6 +64,11 @@
           use-build-blocker: true
           blocking-jobs:
             - "tendrl.*"
+      - build-discarder:
+          days-to-keep: 365
+          num-to-keep: 400
+          #artifact-days-to-keep: 365
+          #artifact-num-to-keep: 365
     wrappers:
       - ansicolor:
           colormap: "xterm"

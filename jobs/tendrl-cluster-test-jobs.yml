@@ -4,7 +4,7 @@
     display-name: 'Tendrl2-0 - cluster-{clustername} Cluster create'
     description: |
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
-        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Backup Maintainer: <a href="mailto:mbukatov@redhat.com">Martin Bukatovic</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
         JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
         Managed by Jenkins Job Builder. Do not edit via web.<br>
@@ -116,7 +116,7 @@
     display-name: 'Tendrl test: cluster-{clustername} Cluster install'
     description: |
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
-        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Backup Maintainer: <a href="mailto:mbukatov@redhat.com">Martin Bukatovic</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
         JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
         Managed by Jenkins Job Builder. Do not edit via web.<br>
@@ -280,7 +280,7 @@
     display-name: 'Tendrl test: cluster-{clustername} Test API'
     description: |
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
-        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Backup Maintainer: <a href="mailto:mbukatov@redhat.com">Martin Bukatovic</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
         JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
         Managed by Jenkins Job Builder. Do not edit via web.<br>
@@ -451,7 +451,7 @@
     display-name: 'Tendrl2-X - cluster-{clustername} Cluster teardown'
     description: |
         Maintainer: <a href="mailto:dahorak@redhat.com">Daniel Horak</a><br>
-        Backup Maintainer: <a href="mailto:mkudlej@redhat.com">Martin Kudlej</a><br>
+        Backup Maintainer: <a href="mailto:mbukatov@redhat.com">Martin Bukatovic</a><br>
         Team Contact: <a href="mailto:tendrl-devel@redhat.com">tendrl-devel</a><br><br>
         JJB Code Location: <a href="https://github.com/usmqe/usmqe-centos-ci/tree/master/jobs">usmqe-centos-ci</a><br>
         Managed by Jenkins Job Builder. Do not edit via web.<br>

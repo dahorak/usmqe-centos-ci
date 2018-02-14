@@ -27,6 +27,22 @@
           name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
           description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
+      - string:
+          name: ADDITIONAL_REPOS
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_SERVER
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_NODES
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_CLIENT
+          default: ""
+          description: "Coma separated list of additional repos."
 
     scm:
       - git:
@@ -64,6 +80,10 @@
           echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}"
           echo "TENDRL_DEPENDENCIES_REPO_URL=${{TENDRL_DEPENDENCIES_REPO_URL}}"
           echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}"
+          echo "ADDITIONAL_REPOS=${{ADDITIONAL_REPOS}}"
+          echo "ADDITIONAL_REPOS_USM_SERVER=${{ADDITIONAL_REPOS_USM_SERVER}}"
+          echo "ADDITIONAL_REPOS_USM_NODES=${{ADDITIONAL_REPOS_USM_NODES}}"
+          echo "ADDITIONAL_REPOS_USM_CLIENT=${{ADDITIONAL_REPOS_USM_CLIENT}}"
           env
           cd ${{WORKSPACE}}/usmqe-centos-ci/ansible
           ANSIBLE_DIR=${{WORKSPACE}}/usmqe-centos-ci/ansible
@@ -135,6 +155,22 @@
           name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
           default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
           description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
+      - string:
+          name: ADDITIONAL_REPOS
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_SERVER
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_NODES
+          default: ""
+          description: "Coma separated list of additional repos."
+      - string:
+          name: ADDITIONAL_REPOS_USM_CLIENT
+          default: ""
+          description: "Coma separated list of additional repos."
 
     disabled: "{obj:disabled}"
     triggers:
@@ -168,6 +204,10 @@
           echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}"
           echo "TENDRL_DEPENDENCIES_REPO_URL=${{TENDRL_DEPENDENCIES_REPO_URL}}"
           echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}"
+          echo "ADDITIONAL_REPOS=${{ADDITIONAL_REPOS}}"
+          echo "ADDITIONAL_REPOS_USM_SERVER=${{ADDITIONAL_REPOS_USM_SERVER}}"
+          echo "ADDITIONAL_REPOS_USM_NODES=${{ADDITIONAL_REPOS_USM_NODES}}"
+          echo "ADDITIONAL_REPOS_USM_CLIENT=${{ADDITIONAL_REPOS_USM_CLIENT}}"
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
             usmqe@${{qe_server}}:/home/usmqe/cluster-{clustername}.hosts
@@ -179,7 +219,11 @@
             -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \
             tendrl_repo_gpgkey_url=${{TENDRL_REPO_GPGKEY_URL}} \
             tendrl_dependencies_repo_url=${{TENDRL_DEPENDENCIES_REPO_URL}} \
-            tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}'"
+            tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}} \
+            additional_repos=${{ADDITIONAL_REPOS}} \
+            additional_repos_usm_server=${{ADDITIONAL_REPOS_USM_SERVER}} \
+            additional_repos_usm_nodes=${{ADDITIONAL_REPOS_USM_NODES}} \
+            additional_repos_usm_client=${{ADDITIONAL_REPOS_USM_CLIENT}}'"
 
           for conf in volume_usmqe_alpha_distrep_4x2.create.conf volume_usmqe_alpha_distrep_4x2.mount.conf; do
             ssh usmqe@${{qe_server}} " \
@@ -199,7 +243,8 @@
             -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \
             tendrl_repo_gpgkey_url=${{TENDRL_REPO_GPGKEY_URL}} \
             tendrl_dependencies_repo_url=${{TENDRL_DEPENDENCIES_REPO_URL}} \
-            tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}'"
+            tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}} \
+            etcd_tls_client_auth=False'"
 
           scp usmqe@${{qe_server}}:/home/usmqe/usmqe-setup/usm.ini ${{HOME}}/cluster-{clustername}.ini
 

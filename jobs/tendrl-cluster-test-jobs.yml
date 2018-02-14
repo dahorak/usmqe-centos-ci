@@ -238,7 +238,13 @@
 
           ssh usmqe@${{qe_server}} " \
             ANSIBLE_FORCE_COLOR=true \
-            ANSIBLE_ROLES_PATH=/home/usmqe/tendrl-ansible/roles/ \
+            ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
+            /home/usmqe/usmqe-setup/qe_get_tendrl_ansible.yml \
+              -e 'tendrl_ansible_dir=/home/usmqe/tendrl-ansible-tmp/'"
+
+          ssh usmqe@${{qe_server}} " \
+            ANSIBLE_FORCE_COLOR=true \
+            ANSIBLE_ROLES_PATH=/home/usmqe/tendrl-ansible-tmp/usr/share/ansible/roles/ \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             /home/usmqe/usmqe-setup/tendrl.yml \
             -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \

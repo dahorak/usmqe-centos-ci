@@ -343,7 +343,7 @@
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
             cat conf/usm.ini ; \
-            py.test --junit-xml=logs/result.xml -vvvrx ${{tests}}"
+            py.test --junit-xml=logs/result.xml -vvvrx ${{tests}} -k 'test_cluster_import'"
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
 

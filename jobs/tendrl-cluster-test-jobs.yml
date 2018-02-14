@@ -482,7 +482,7 @@
             - "tendrl.*"
     scm:
       - git:
-          url: 'https://github.com/mkudlej/usmqe-centos-ci.git'
+          url: 'https://github.com/usmqe/usmqe-centos-ci.git'
           branches:
             - "*/master"
           basedir: usmqe-centos-ci

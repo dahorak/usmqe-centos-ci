@@ -45,6 +45,7 @@
     - fedpkg
     - fontconfig
     - git
+    - mock
     - nodejs
     - nodejs-packaging
     - npm
@@ -52,3 +53,13 @@
     - ruby
     - rubygem-bundler
     - vim
+
+  - name: Create mock user
+    user:
+      name: mock
+      group: mock
+
+  - name: Initialize mock chroot
+    shell: mock -r epel-7-x86_64 --init
+    become: true
+    become_user: mock

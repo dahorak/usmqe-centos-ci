@@ -58,8 +58,3 @@
     user:
       name: mock
       group: mock
-
-  - name: Initialize mock chroot
-    shell: mock -r epel-7-x86_64 --init
-    become: true
-    become_user: mock

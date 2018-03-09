@@ -28,6 +28,12 @@
         name="{{ data.results.hosts.keys()[1] }}"
         groups="usm_server"
 
+    # tendrl-server
+    - name: Add host to group
+      add_host:
+        name="{{ data.results.hosts.keys()[1] }}"
+        groups="tendrl-server"
+
     # usm_client
     - name: Add host to group
       add_host:
@@ -45,7 +51,7 @@
     - name: Add hosts to group
       add_host:
         name="{{ item }}"
-        groups="gluster"
+        groups="gluster-servers"
       with_items: "{{ data.results.hosts.keys()[3:] }}"
 
 

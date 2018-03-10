@@ -62,6 +62,6 @@
 
 
 - name: Prepare disk devices for gluster
-  hosts: gluster
+  hosts: gluster-servers
   roles:
   - role: createiscsidevices

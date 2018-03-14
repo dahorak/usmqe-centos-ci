@@ -1,6 +1,6 @@
 ---
 - name: Prepare disk devices for creating Gluster bricks
-  hosts: gluster-servers
+  hosts: gluster_servers
   roles: 
   - { role: createdevices, devices_count: devices_count }
 

@@ -295,7 +295,8 @@
           export ANSIBLE_ROLES_PATH=${{WORKSPACE}}/tendrl-ansible/roles/
           export ANSIBLE_FORCE_COLOR=true
           ansible-playbook -i ${{HOME}}/cluster-{clustername}.hosts -vvv \
-            ${{WORKSPACE}}/usmqe-setup/qe_server.yml
+            ${{WORKSPACE}}/usmqe-setup/qe_server.yml \
+            -e 'usmqe_setup_repo=https://github.com/usmqe/usmqe-setup.git usmqe_setup_version=master'
       - shell: |
           #!/bin/bash -x
           export ANSIBLE_FORCE_COLOR=true

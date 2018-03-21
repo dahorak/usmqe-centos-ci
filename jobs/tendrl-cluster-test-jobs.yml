@@ -563,7 +563,7 @@
     triggers:
       - timed: ''
     concurrent: false
-    quiet-period: 5
+    quiet-period: 1
     block-downstream: true
     block-upstream: true
     properties:

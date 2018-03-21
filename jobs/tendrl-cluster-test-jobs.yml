@@ -24,22 +24,10 @@
           abort: true
           type: absolute
     parameters:
-      - string:
-          name: TENDRL_REPO_URL
-          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/release/epel-7-x86_64/"
-          description: "Tendrl main repo URL."
-      - string:
-          name: TENDRL_REPO_GPGKEY_URL
-          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/release/pubkey.gpg"
-          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
-      - string:
-          name: TENDRL_DEPENDENCIES_REPO_URL
-          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
-          description: "Tendrl dependencies repo URL."
-      - string:
-          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
-          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
-          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
+      - choice:
+          name: TENDRL_REPO
+          choices: "{obj:tendrl_repo_choices}"
+          description: "Tendrl repo configuration."
       - string:
           name: ADDITIONAL_REPOS
           default: ""
@@ -60,10 +48,7 @@
     builders:
       - shell: |
           #!/bin/bash -e
-          echo "TENDRL_REPO_URL=${{TENDRL_REPO_URL}}"
-          echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}"
-          echo "TENDRL_DEPENDENCIES_REPO_URL=${{TENDRL_DEPENDENCIES_REPO_URL}}"
-          echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}"
+          echo "TENDRL_REPO=${{TENDRL_REPO}}"
           echo "ADDITIONAL_REPOS=${{ADDITIONAL_REPOS}}"
           echo "ADDITIONAL_REPOS_USM_SERVER=${{ADDITIONAL_REPOS_USM_SERVER}}"
           echo "ADDITIONAL_REPOS_USM_NODES=${{ADDITIONAL_REPOS_USM_NODES}}"
@@ -148,22 +133,10 @@
     project-type: freestyle
     defaults: global
     parameters:
-      - string:
-          name: TENDRL_REPO_URL
-          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/release/epel-7-x86_64/"
-          description: "Tendrl main repo URL."
-      - string:
-          name: TENDRL_REPO_GPGKEY_URL
-          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/release/pubkey.gpg"
-          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
-      - string:
-          name: TENDRL_DEPENDENCIES_REPO_URL
-          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
-          description: "Tendrl dependencies repo URL."
-      - string:
-          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
-          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
-          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
+      - choice:
+          name: TENDRL_REPO
+          choices: "{obj:tendrl_repo_choices}"
+          description: "Tendrl repo configuration."
       - string:
           name: ADDITIONAL_REPOS
           default: ""
@@ -218,10 +191,7 @@
       - shell: |
           #!/bin/bash -xe
           # Get machines from CentOS CI pool
-          echo "TENDRL_REPO_URL=${{TENDRL_REPO_URL}}"
-          echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}"
-          echo "TENDRL_DEPENDENCIES_REPO_URL=${{TENDRL_DEPENDENCIES_REPO_URL}}"
-          echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}"
+          echo "TENDRL_REPO=${{TENDRL_REPO}}"
           echo "ADDITIONAL_REPOS=${{ADDITIONAL_REPOS}}"
           echo "ADDITIONAL_REPOS_USM_SERVER=${{ADDITIONAL_REPOS_USM_SERVER}}"
           echo "ADDITIONAL_REPOS_USM_NODES=${{ADDITIONAL_REPOS_USM_NODES}}"
@@ -234,6 +204,17 @@
           ansible-playbook -i ${{ANSIBLE_DIR}}/empty.hosts -vvv \
             -e clustername=cluster-{clustername} -M ${{CICO_DIR}} \
             ${{ANSIBLE_DIR}}/cluster-{clustername}.yml
+
+          # configure variables in inventory file
+          usm_server=$(grep -A1 '\[usm_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
+          echo >> ${{HOME}}/cluster-{clustername}.hosts
+          echo "[all:vars]" >> ${{HOME}}/cluster-{clustername}.hosts
+          echo "etcd_ip_address=0.0.0.0" >> ${{HOME}}/cluster-{clustername}.hosts
+          echo "etcd_fqdn=${{usm_server}}" >> ${{HOME}}/cluster-{clustername}.hosts
+          echo "etcd_tls_client_auth=False" >> ${{HOME}}/cluster-{clustername}.hosts
+          echo "graphite_fqdn=${{usm_server}}" >> ${{HOME}}/cluster-{clustername}.hosts
+          echo "tendrl_copr_repo=${{TENDRL_REPO}}" >> ${{HOME}}/cluster-{clustername}.hosts
+
       - shell: |
           #!/bin/bash -x
           # Print Ansible host file
@@ -275,22 +256,10 @@
     project-type: freestyle
     defaults: global
     parameters:
-      - string:
-          name: TENDRL_REPO_URL
-          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/release/epel-7-x86_64/"
-          description: "Tendrl main repo URL."
-      - string:
-          name: TENDRL_REPO_GPGKEY_URL
-          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/release/pubkey.gpg"
-          description: "Tendrl main repo GPG key URL (GPG key check disabled if empty)."
-      - string:
-          name: TENDRL_DEPENDENCIES_REPO_URL
-          default: "http://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/epel-7-x86_64/"
-          description: "Tendrl dependencies repo URL."
-      - string:
-          name: TENDRL_DEPENDENCIES_REPO_GPGKEY_URL
-          default: "https://copr-be.cloud.fedoraproject.org/results/tendrl/dependencies/pubkey.gpg"
-          description: "Tendrl dependencies repo GPG key URL (GPG key check disabled if empty)."
+      - choice:
+          name: TENDRL_REPO
+          choices: "{obj:tendrl_repo_choices}"
+          description: "Tendrl repo configuration."
       - string:
           name: ADDITIONAL_REPOS
           default: ""
@@ -336,15 +305,13 @@
 
       - shell: |
           #!/bin/bash -xe
-          echo "TENDRL_REPO_URL=${{TENDRL_REPO_URL}}"
-          echo "TENDRL_REPO_GPGKEY_URL=${{TENDRL_REPO_GPGKEY_URL}}"
-          echo "TENDRL_DEPENDENCIES_REPO_URL=${{TENDRL_DEPENDENCIES_REPO_URL}}"
-          echo "TENDRL_DEPENDENCIES_REPO_GPGKEY_URL=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}}"
+          echo "TENDRL_REPO=${{TENDRL_REPO}}"
           echo "ADDITIONAL_REPOS=${{ADDITIONAL_REPOS}}"
           echo "ADDITIONAL_REPOS_USM_SERVER=${{ADDITIONAL_REPOS_USM_SERVER}}"
           echo "ADDITIONAL_REPOS_USM_NODES=${{ADDITIONAL_REPOS_USM_NODES}}"
           echo "ADDITIONAL_REPOS_USM_CLIENT=${{ADDITIONAL_REPOS_USM_CLIENT}}"
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
+          usm_server=$(grep -A1 '\[usm_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
             usmqe@${{qe_server}}:/home/usmqe/cluster-{clustername}.hosts
           ssh usmqe@${{qe_server}} " \
@@ -352,21 +319,19 @@
             ANSIBLE_ROLES_PATH=/home/usmqe/tendrl-ansible/roles/ \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             /home/usmqe/usmqe-setup/ci_default_pre_setup.yml \
-            -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \
-            tendrl_repo_gpgkey_url=${{TENDRL_REPO_GPGKEY_URL}} \
-            tendrl_dependencies_repo_url=${{TENDRL_DEPENDENCIES_REPO_URL}} \
-            tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}} \
+            -e 'tendrl_repo=${{TENDRL_REPO}} \
             additional_repos=${{ADDITIONAL_REPOS}} \
             additional_repos_usm_server=${{ADDITIONAL_REPOS_USM_SERVER}} \
             additional_repos_usm_nodes=${{ADDITIONAL_REPOS_USM_NODES}} \
             additional_repos_usm_client=${{ADDITIONAL_REPOS_USM_CLIENT}}'"
 
+          ssh usmqe@${{qe_server}} " \
+            python /home/usmqe/usmqe-setup/bin/ansible2gdeploy.py \
+              -i /home/usmqe/cluster-{clustername}.hosts \
+              /home/usmqe/usmqe-setup/gdeploy_config/{{volume_alpha_distrep_6x2.create.conf,volume_alpha_distrep_6x2.mount.conf}} \
+              -p UPDATED_ \
+              -s sdc,sdd,sde,sdf,sdg"
           for conf in volume_alpha_distrep_6x2.create.conf volume_alpha_distrep_6x2.mount.conf; do
-            ssh usmqe@${{qe_server}} " \
-              python /home/usmqe/usmqe-setup/bin/ansible2gdeploy.py \
-                -i /home/usmqe/cluster-{clustername}.hosts \
-                /home/usmqe/usmqe-setup/gdeploy_config/${{conf}} \
-                -o /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
             ssh usmqe@${{qe_server}} "sed -i 's/vd\([a-z]\)/sd\1/g' /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
             ssh usmqe@${{qe_server}} "cat /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
             ssh usmqe@${{qe_server}} "gdeploy -c /home/usmqe/usmqe-setup/gdeploy_config/UPDATED_${{conf}}"
@@ -376,18 +341,35 @@
             ANSIBLE_FORCE_COLOR=true \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             /home/usmqe/usmqe-setup/qe_get_tendrl_ansible.yml \
-              -e 'tendrl_ansible_dir=/home/usmqe/tendrl-ansible-tmp/'"
+              -e 'tendrl_ansible_dir=/home/usmqe/tendrl-ansible-tmp/ tendrl_repo=${{TENDRL_REPO}}'"
 
           ssh usmqe@${{qe_server}} " \
             ANSIBLE_FORCE_COLOR=true \
-            ANSIBLE_ROLES_PATH=/home/usmqe/tendrl-ansible-tmp/usr/share/ansible/roles/ \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
-            /home/usmqe/usmqe-setup/tendrl.yml \
-            -e 'tendrl_repo_url=${{TENDRL_REPO_URL}} \
-            tendrl_repo_gpgkey_url=${{TENDRL_REPO_GPGKEY_URL}} \
-            tendrl_dependencies_repo_url=${{TENDRL_DEPENDENCIES_REPO_URL}} \
-            tendrl_dependencies_repo_gpgkey_url=${{TENDRL_DEPENDENCIES_REPO_GPGKEY_URL}} \
-            etcd_tls_client_auth=False'"
+            /home/usmqe/usmqe-setup/ci_default_pre_tendrl.yml -e \
+            'etcd_tls_client_auth=False'"
+
+          # copy inventory file to usm_server
+          scp ${{HOME}}/cluster-{clustername}.hosts root@${{usm_server}}:/home/usmqe/cluster-{clustername}.hosts
+
+          ssh root@${{usm_server}} " \
+            cat /home/usmqe/cluster-{clustername}.hosts"
+
+          ssh root@${{usm_server}} " \
+            ANSIBLE_FORCE_COLOR=true \
+            ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
+            /home/usmqe/prechecks.yml || \
+              echo '!!! WARNING: prechecks.yml failed !!!'"
+
+          ssh root@${{usm_server}} " \
+            ANSIBLE_FORCE_COLOR=true \
+            ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
+            /home/usmqe/site.yml"
+
+          ssh usmqe@${{qe_server}} " \
+            ANSIBLE_FORCE_COLOR=true \
+            ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
+            /home/usmqe/usmqe-setup/ci_default_post_tendrl.yml"
 
           scp usmqe@${{qe_server}}:/home/usmqe/usmqe-setup/usm.ini ${{HOME}}/cluster-{clustername}.ini
 
@@ -653,3 +635,6 @@
           timeout: 60
           disabled: false
           node: 'tendrl-ci-slave01'
+          tendrl_repo_choices:
+            - release
+            - master

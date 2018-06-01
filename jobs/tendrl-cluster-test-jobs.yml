@@ -296,7 +296,7 @@
           export ANSIBLE_FORCE_COLOR=true
           ansible-playbook -i ${{HOME}}/cluster-{clustername}.hosts -vvv \
             ${{WORKSPACE}}/usmqe-setup/qe_server.yml \
-            -e 'usmqe_setup_repo=https://github.com/usmqe/usmqe-setup.git usmqe_setup_version=master'
+            -e 'usmqe_setup_repo=https://github.com/usmqe/usmqe-setup.git usmqe_setup_version=master usmqe_tests_repo=https://github.com/usmqe/usmqe-tests.git usmqe_tests_version=master'
       - shell: |
           #!/bin/bash -x
           export ANSIBLE_FORCE_COLOR=true
@@ -350,19 +350,22 @@
             /home/usmqe/usmqe-setup/ci_default_pre_tendrl.yml -e \
             'etcd_tls_client_auth=False'"
 
-          # copy inventory file to usm_server
-          scp ${{HOME}}/cluster-{clustername}.hosts root@${{usm_server}}:/home/usmqe/cluster-{clustername}.hosts
-
           ssh root@${{usm_server}} " \
+            cat /root/.ssh/authorized_keys >> /home/usmqe/.ssh/authorized_keys"
+
+          # copy inventory file to usm_server
+          scp ${{HOME}}/cluster-{clustername}.hosts usmqe@${{usm_server}}:/home/usmqe/cluster-{clustername}.hosts
+
+          ssh usmqe@${{usm_server}} " \
             cat /home/usmqe/cluster-{clustername}.hosts"
 
-          ssh root@${{usm_server}} " \
+          ssh usmqe@${{usm_server}} " \
             ANSIBLE_FORCE_COLOR=true \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             /home/usmqe/prechecks.yml || \
               echo '!!! WARNING: prechecks.yml failed !!!'"
 
-          ssh root@${{usm_server}} " \
+          ssh usmqe@${{usm_server}} " \
             ANSIBLE_FORCE_COLOR=true \
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             /home/usmqe/site.yml"
@@ -438,13 +441,16 @@
             tests="${{tests}} usmqe_tests/api/${{test}}";
           done
           # prepare env
-          ssh usmqe@${{qe_server}} "export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
+          ssh usmqe@${{qe_server}} "set -ex ; \
+            export PATH=\$PATH:\$HOME/.local/bin:\$HOME/bin; \
             pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
             env ; \
             cd /home/usmqe/usmqe-tests/; \
             cat conf/usm.hosts ; \
             cat conf/usm.ini ; \
-            py.test --junit-xml=logs/result.xml -vvvrx ${{tests}} -k 'test_cluster_import_valid'"
+            py.test --junit-xml=logs/result.xml -vvvrx ${{tests}} \
+            -m 'stable and testready' -k ''"
+
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
 

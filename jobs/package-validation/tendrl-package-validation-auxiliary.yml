@@ -103,6 +103,8 @@
             node-parameters: true
             condition: FAILED
 
+      - email:
+          recipients: dahorak@redhat.com
 
 - job-template:
     name: "tendrl-pkgval-X-{project_name}-teardown"

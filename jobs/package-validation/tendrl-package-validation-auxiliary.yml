@@ -78,6 +78,7 @@
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)
           ssh root@${{qe_server}} " \
             echo -e '[grafana_repo]\nname=grafana_repo\nbaseurl=https://packagecloud.io/grafana/stable/el/7/x86_64\nrepo_gpgcheck=1\nenabled=1\ngpgcheck=1\ngpgkey=https://packagecloud.io/gpg.key https://grafanarel.s3.amazonaws.com/RPM-GPG-KEY-grafana\nsslverify=1\nsslcacert=/etc/pki/tls/certs/ca-bundle.crt\n' > /etc/yum.repos.d/grafana.repo"
+          # WORKAROUND for https://github.com/Tendrl/monitoring-integration/issues/319
           ssh root@${{qe_server}} " \
             echo 'exclude=grafana-5*' >> /etc/yum.conf"
           cd usmqe-setup

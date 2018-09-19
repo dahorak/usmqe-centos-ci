@@ -79,6 +79,10 @@
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
           ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+          # WORKAROUND FOR https://github.com/pytest-dev/pytest/issues/3547
+          sed -i 's/skips="\([0-9]*\)"/skipped="\1"/g' logs/result.xml
+          sed -i 's/file="[^"]*"//g' logs/result.xml
+          sed -i 's/line="[0-9]*"//g' logs/result.xml
       - shell: |
           #!/bin/bash -x
           set +x
@@ -195,6 +199,10 @@
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
           ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+          # WORKAROUND FOR https://github.com/pytest-dev/pytest/issues/3547
+          sed -i 's/skips="\([0-9]*\)"/skipped="\1"/g' logs/result.xml
+          sed -i 's/file="[^"]*"//g' logs/result.xml
+          sed -i 's/line="[0-9]*"//g' logs/result.xml
       - shell: |
           #!/bin/bash -x
           #cat ${{HOME}}/pkgval_{project_name}.hosts
@@ -305,6 +313,10 @@
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
           ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+          # WORKAROUND FOR https://github.com/pytest-dev/pytest/issues/3547
+          sed -i 's/skips="\([0-9]*\)"/skipped="\1"/g' logs/result.xml
+          sed -i 's/file="[^"]*"//g' logs/result.xml
+          sed -i 's/line="[0-9]*"//g' logs/result.xml
       - shell: |
           #!/bin/bash -x
           #cat ${{HOME}}/pkgval_{project_name}.hosts
@@ -415,6 +427,10 @@
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
           ssh usmqe@${{qe_server}} "rm -f /home/usmqe/usmqe-tests/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+          # WORKAROUND FOR https://github.com/pytest-dev/pytest/issues/3547
+          sed -i 's/skips="\([0-9]*\)"/skipped="\1"/g' logs/result.xml
+          sed -i 's/file="[^"]*"//g' logs/result.xml
+          sed -i 's/line="[0-9]*"//g' logs/result.xml
     publishers:
       - trigger-parameterized-builds:
           - project: 'tendrl-pkgval-5-{project_name}-unittests'
@@ -506,6 +522,10 @@
           scp -r usmqe@${{qe_server}}:/home/usmqe/logs .
           ssh usmqe@${{qe_server}} "rm -f /home/usmqe/logs/*"
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result-*.xml
+          # WORKAROUND FOR https://github.com/pytest-dev/pytest/issues/3547
+          sed -i 's/skips="\([0-9]*\)"/skipped="\1"/g' logs/result-*.xml
+          sed -i 's/file="[^"]*"//g' logs/result-*.xml
+          sed -i 's/line="[0-9]*"//g' logs/result-*.xml
     publishers:
       - trigger-parameterized-builds:
           - project: 'tendrl-pkgval-X-{project_name}-teardown'

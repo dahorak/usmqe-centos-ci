@@ -453,6 +453,10 @@
 
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+          # WORKAROUND FOR https://github.com/pytest-dev/pytest/issues/3547
+          sed -i 's/skips="\([0-9]*\)"/skipped="\1"/g' logs/result.xml
+          sed -i 's/file="[^"]*"//g' logs/result.xml
+          sed -i 's/line="[0-9]*"//g' logs/result.xml
 
       - shell: |
           #!/bin/bash -x
@@ -531,6 +535,10 @@
             py.test --junit-xml=logs/result.xml -vvvrx ${{tests}}"
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .
           sed -i 's/#x1B\[[01]\(;[0-9][0-9]\)\?m//g' logs/result.xml
+          # WORKAROUND FOR https://github.com/pytest-dev/pytest/issues/3547
+          sed -i 's/skips="\([0-9]*\)"/skipped="\1"/g' logs/result.xml
+          sed -i 's/file="[^"]*"//g' logs/result.xml
+          sed -i 's/line="[0-9]*"//g' logs/result.xml
 
       - shell: |
           #!/bin/bash -x

@@ -324,7 +324,8 @@
             additional_repos=${{ADDITIONAL_REPOS}} \
             additional_repos_usm_server=${{ADDITIONAL_REPOS_USM_SERVER}} \
             additional_repos_usm_nodes=${{ADDITIONAL_REPOS_USM_NODES}} \
-            additional_repos_usm_client=${{ADDITIONAL_REPOS_USM_CLIENT}}'"
+            additional_repos_usm_client=${{ADDITIONAL_REPOS_USM_CLIENT}} \
+            gluster_centos_repo=4-1'"
 
           ssh usmqe@${{qe_server}} " \
             python /home/usmqe/usmqe-setup/bin/ansible2gdeploy.py \

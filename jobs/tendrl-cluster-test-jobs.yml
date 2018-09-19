@@ -167,13 +167,13 @@
       - timed: ''
     concurrent: false
     quiet-period: 10
-    block-downstream: true
-    block-upstream: true
+    block-downstream: false
+    block-upstream: false
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - "tendrl.*"
+            - "tendrl-2-[0-9X].*"
       - build-discarder:
           days-to-keep: 365
           num-to-keep: 400
@@ -282,8 +282,8 @@
       - timed: ''
     concurrent: false
     quiet-period: 5
-    block-downstream: true
-    block-upstream: true
+    block-downstream: false
+    block-upstream: false
     wrappers:
       - ansicolor:
           colormap: "xterm"
@@ -419,8 +419,8 @@
       - timed: ''
     concurrent: false
     quiet-period: 5
-    block-downstream: true
-    block-upstream: true
+    block-downstream: false
+    block-upstream: false
     wrappers:
       - ansicolor:
           colormap: "xterm"
@@ -430,6 +430,7 @@
           #!/bin/bash -x
           #cd usmqe-tests
           ## prepare hosts file
+          sleep 60
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
             usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
@@ -504,8 +505,8 @@
       - timed: ''
     concurrent: false
     quiet-period: 5
-    block-downstream: true
-    block-upstream: true
+    block-downstream: false
+    block-upstream: false
     wrappers:
       - ansicolor:
           colormap: "xterm"
@@ -578,13 +579,13 @@
       - timed: ''
     concurrent: false
     quiet-period: 1
-    block-downstream: true
-    block-upstream: true
+    block-downstream: false
+    block-upstream: false
     properties:
       - build-blocker:
           use-build-blocker: true
           blocking-jobs:
-            - "tendrl.*"
+            - "tendrl-2-[0-9X].*"
     scm:
       - git:
           url: 'https://github.com/usmqe/usmqe-centos-ci.git'

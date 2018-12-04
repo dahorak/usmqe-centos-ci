@@ -376,7 +376,7 @@
             ansible-playbook -i /home/usmqe/cluster-{clustername}.hosts -vvv \
             /home/usmqe/usmqe-setup/ci_default_post_tendrl.yml"
 
-          scp usmqe@${{qe_server}}:/home/usmqe/usmqe-setup/usm.ini ${{HOME}}/cluster-{clustername}.ini
+          scp usmqe@${{qe_server}}:/home/usmqe/usmqe-setup/usm.yaml ${{HOME}}/cluster-{clustername}.yaml
 
 
       - shell: |
@@ -430,13 +430,15 @@
       - shell: |
           #!/bin/bash -x
           #cd usmqe-tests
-          ## prepare hosts file
+          ## prepare hosts file and configuration files
           sleep 60
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
-            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
-          scp ${{HOME}}/cluster-{clustername}.ini \
-            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/cluster-{clustername}.hosts
+          scp ${{HOME}}/cluster-{clustername}.yaml \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/cluster-{clustername}.yaml
+          ssh usmqe@${{qe_server}} "set -ex ; \
+            sed -i 's/usm_example/cluster-{clustername}/' /home/usmqe/usmqe-tests/conf/main.yaml"
           # prepare required variables
           tests=""
           for test in ${{TEST_LIST//[_,]/ }}; do
@@ -448,8 +450,8 @@
             pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
             env ; \
             cd /home/usmqe/usmqe-tests/; \
-            cat conf/usm.hosts ; \
-            cat conf/usm.ini ; \
+            cat conf/cluster-{clustername}.hosts ; \
+            cat conf/cluster-{clustername}.yaml ; \
             py.test --junit-xml=logs/result.xml -vvvrx ${{tests}} \
             -m 'testready and happypath' -k ''"
 
@@ -519,9 +521,9 @@
           ## prepare hosts file
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/cluster-{clustername}.hosts | tail -1)
           scp ${{HOME}}/cluster-{clustername}.hosts \
-            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.hosts
-          scp ${{HOME}}/cluster-{clustername}.ini \
-            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/usm.ini
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/cluster-{clustername}.hosts
+          scp ${{HOME}}/cluster-{clustername}.yaml \
+            usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/conf/cluster-{clustername}.yaml
           # prepare required variables
           tests=""
           for test in ${{TEST_LIST_OTHERS//[_,]/ }}; do
@@ -532,8 +534,8 @@
             pip install --user -r /home/usmqe/usmqe-tests/requirements.txt; \
             env ; \
             cd /home/usmqe/usmqe-tests/; \
-            cat conf/usm.hosts ; \
-            cat conf/usm.ini ; \
+            cat conf/cluster-{clustername}.hosts ; \
+            cat conf/cluster-{clustername}.yaml ; \
             py.test --junit-xml=logs/result.xml -vvvrx ${{tests}} \
             -m testready"
           scp -r usmqe@${{qe_server}}:/home/usmqe/usmqe-tests/logs .

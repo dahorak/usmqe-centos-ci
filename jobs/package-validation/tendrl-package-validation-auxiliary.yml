@@ -73,7 +73,7 @@
           export ANSIBLE_ROLES_PATH=${{WORKSPACE}}/tendrl-ansible/roles/
           ansible-playbook -i ${{HOME}}/pkgval_{project_name}.hosts -vvv \
             ${{WORKSPACE}}/usmqe-setup/qe_server.yml \
-            -e 'usmqe_tests_repo=https://github.com/usmqe/usmqe-tests.git usmqe_tests_version=master'
+            -e 'usmqe_tests_repo=https://github.com/usmqe/usmqe-tests.git usmqe_tests_version=master skip_ssl_configuration=true'
       - shell: |
           #!/bin/bash -xe
           qe_server=$(grep -A1 '\[qe_server\]' ${{HOME}}/pkgval_{project_name}.hosts | tail -1)

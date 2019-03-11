@@ -296,7 +296,7 @@
           export ANSIBLE_FORCE_COLOR=true
           ansible-playbook -i ${{HOME}}/cluster-{clustername}.hosts -vvv \
             ${{WORKSPACE}}/usmqe-setup/qe_server.yml \
-            -e 'usmqe_setup_repo=https://github.com/usmqe/usmqe-setup.git usmqe_setup_version=master usmqe_tests_repo=https://github.com/usmqe/usmqe-tests.git usmqe_tests_version=master'
+            -e 'usmqe_setup_repo=https://github.com/usmqe/usmqe-setup.git usmqe_setup_version=master usmqe_tests_repo=https://github.com/usmqe/usmqe-tests.git usmqe_tests_version=master skip_ssl_configuration=true'
       - shell: |
           #!/bin/bash -x
           export ANSIBLE_FORCE_COLOR=true

@@ -82,7 +82,7 @@
           #!/bin/bash -xe
           cd usmqe-setup
           ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
-            ${{WORKSPACE}}/usmqe-setup/qe_server.yml
+            ${{WORKSPACE}}/usmqe-setup/qe_server.yml -e 'skip_ssl_configuration=true'
       - shell: |
           #!/bin/bash -x
           ansible-playbook -i ${{HOME}}/{clustername}.hosts -vvv \
